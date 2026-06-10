@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeonArtist — Build Your AI Artist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #111111;
+      --surface:    #181818;
+      --surface2:   #1f1f1f;
+      --border:     #2a2a2a;
+      --text:       #f0f0f0;
+      --muted:      #888;
+      --faint:      #444;
+      --green:      #39FF14;
+      --green-dim:  rgba(57,255,20,0.10);
+      --green-glow: rgba(57,255,20,0.28);
+      --green-glow2:rgba(57,255,20,0.08);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── SCROLL ANIMATIONS ── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.55s cubic-bezier(0.22,1,0.36,1),
+                  transform 0.55s cubic-bezier(0.22,1,0.36,1);
+    }
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .fade-up-delay-1 { transition-delay: 0.08s; }
+    .fade-up-delay-2 { transition-delay: 0.16s; }
+    .fade-up-delay-3 { transition-delay: 0.24s; }
+    .fade-up-delay-4 { transition-delay: 0.32s; }
+    .fade-up-delay-5 { transition-delay: 0.40s; }
+    .fade-up-delay-6 { transition-delay: 0.48s; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 36px;
+      height: 62px;
+      background: rgba(17,17,17,0.6);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid transparent;
+      transition: background 0.35s, border-color 0.35s, box-shadow 0.35s;
+    }
+
+    nav.scrolled {
+      background: rgba(17,17,17,0.96);
+      border-bottom-color: var(--border);
+      box-shadow: 0 1px 32px rgba(0,0,0,0.5);
+    }
+
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 15px; font-weight: 700; color: var(--text);
+      text-decoration: none; letter-spacing: -0.3px;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .nav-logo svg { width: 28px; height: 28px; }
+
+    .nav-links {
+      display: flex; align-items: center; gap: 32px;
+      list-style: none;
+      position: absolute; left: 50%; transform: translateX(-50%);
+    }
+
+    .nav-links a {
+      font-size: 13px; font-weight: 400; color: var(--muted);
+      text-decoration: none; transition: color 0.15s;
+      letter-spacing: 0.1px;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    /* Breathing glow button */
+    @keyframes btnGlow {
+      0%, 100% {
+        box-shadow: 0 0 8px rgba(57,255,20,0.4), 0 0 18px rgba(57,255,20,0.2);
+        border-color: rgba(57,255,20,0.7);
+      }
+      50% {
+        box-shadow: 0 0 18px rgba(57,255,20,0.7), 0 0 36px rgba(57,255,20,0.35);
+        border-color: rgba(57,255,20,1);
+      }
+    }
+
+    .btn-nav {
+      font-size: 13px; font-weight: 600;
+      padding: 8px 18px; border-radius: 8px;
+      background: var(--green); color: #000;
+      border: 1px solid var(--green); cursor: pointer;
+      transition: opacity 0.15s, transform 0.15s;
+      animation: btnGlow 2.4s ease-in-out infinite;
+      letter-spacing: -0.1px;
+    }
+
+    .btn-nav:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 130px 24px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Radial green ambient glow behind hero */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 20%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 700px; height: 400px;
+      background: radial-gradient(ellipse, rgba(57,255,20,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.6px;
+      color: var(--green);
+      border: 1px solid rgba(57,255,20,0.28);
+      border-radius: 100px; padding: 6px 16px;
+      margin-bottom: 40px;
+      text-transform: uppercase;
+      background: rgba(57,255,20,0.05);
+      backdrop-filter: blur(8px);
+    }
+
+    .badge-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+      animation: liveDot 2s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes liveDot {
+      0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--green); }
+      50%       { opacity: 0.25; box-shadow: 0 0 2px var(--green); }
+    }
+
+    .hero h1 {
+      font-size: clamp(44px, 7.5vw, 86px);
+      font-weight: 900;
+      line-height: 1.02;
+      letter-spacing: -3px;
+      max-width: 840px;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 em { font-style: normal; color: var(--green); }
+
+    .hero p {
+      font-size: clamp(15px, 2vw, 18px);
+      color: var(--muted);
+      font-weight: 400;
+      line-height: 1.65;
+      max-width: 480px;
+      margin-bottom: 44px;
+    }
+
+    .hero-ctas {
+      display: flex; align-items: center; gap: 14px;
+      flex-wrap: wrap; justify-content: center;
+    }
+
+    .btn-primary {
+      font-size: 15px; font-weight: 700;
+      padding: 15px 30px; border-radius: 10px;
+      background: var(--green); color: #000;
+      border: 1px solid var(--green); cursor: pointer;
+      transition: opacity 0.15s, transform 0.15s;
+      display: inline-flex; align-items: center; gap: 8px;
+      letter-spacing: -0.1px;
+      animation: btnGlow 2.4s ease-in-out infinite;
+    }
+
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
+
+    .btn-secondary {
+      font-size: 15px; font-weight: 500;
+      padding: 15px 30px; border-radius: 10px;
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border); cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--faint);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .hero-note {
+      margin-top: 20px; font-size: 12px; color: var(--muted);
+      letter-spacing: 0.2px;
+    }
+
+    /* ── CANVAS WAVEFORM ── */
+    .waveform-wrap {
+      margin-top: 64px;
+      width: 100%; max-width: 600px;
+      position: relative;
+    }
+
+    #waveCanvas {
+      display: block;
+      width: 100%;
+      height: 72px;
+    }
+
+    /* ── SECTION COMMON ── */
+    section { padding: 100px 24px; }
+
+    .section-inner {
+      max-width: 1060px; margin: 0 auto;
+    }
+
+    .eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: 1.4px;
+      text-transform: uppercase; color: var(--green);
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      font-size: clamp(30px, 4vw, 48px);
+      font-weight: 800; letter-spacing: -1.8px;
+      line-height: 1.07; margin-bottom: 16px;
+    }
+
+    .section-sub {
+      font-size: 16px; color: var(--muted);
+      line-height: 1.7; max-width: 540px;
+    }
+
+    /* ── FOUNDER ── */
+    .founder-section {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .founder-card {
+      background: var(--surface);
+      border: 1px solid rgba(57,255,20,0.2);
+      border-radius: 20px;
+      padding: 52px 48px;
+      max-width: 780px;
+      margin: 0 auto;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 0 60px rgba(57,255,20,0.05);
+      transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+    }
+
+    .founder-card:hover {
+      border-color: rgba(57,255,20,0.35);
+      box-shadow: 0 0 80px rgba(57,255,20,0.09);
+      transform: translateY(-2px);
+    }
+
+    .founder-heading {
+      font-size: clamp(22px, 3vw, 30px);
+      font-weight: 800; letter-spacing: -0.8px;
+      margin-bottom: 28px; color: var(--text);
+    }
+
+    .founder-heading span { color: var(--green); }
+
+    .founder-card p {
+      font-size: 16px; line-height: 1.8;
+      color: #bbb; margin-bottom: 14px;
+    }
+
+    .founder-card p:last-of-type { margin-bottom: 0; }
+
+    .founder-sig {
+      margin-top: 32px;
+      font-size: 13px; color: var(--muted);
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .founder-sig strong { color: var(--text); }
+
+    .founder-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--green-dim);
+      border: 1px solid rgba(57,255,20,0.25);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--green); flex-shrink: 0;
+    }
+
+    /* ── OPPORTUNITY ── */
+    .opportunity-section { background: var(--surface); }
+
+    .opp-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 12px;
+      margin-top: 52px;
+    }
+
+    .opp-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 30px 28px;
+      text-align: center;
+      transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+      cursor: default;
+    }
+
+    .opp-card:hover {
+      border-color: rgba(57,255,20,0.3);
+      box-shadow: 0 0 28px rgba(57,255,20,0.07);
+      transform: translateY(-3px);
+    }
+
+    .opp-card .opp-number {
+      font-size: 34px; font-weight: 800;
+      color: var(--green); letter-spacing: -1.5px;
+      margin-bottom: 8px;
+      text-shadow: 0 0 20px rgba(57,255,20,0.3);
+    }
+
+    .opp-card .opp-label {
+      font-size: 12px; color: var(--muted); line-height: 1.6;
+    }
+
+    .opp-message {
+      margin-top: 44px;
+      padding: 26px 36px;
+      border: 1px solid rgba(57,255,20,0.2);
+      border-radius: 14px;
+      background: var(--green-dim);
+      font-size: 15px; color: var(--text);
+      line-height: 1.65; text-align: center;
+    }
+
+    .opp-message strong { color: var(--green); }
+
+    /* ── SYSTEM STEPS ── */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 0;
+      margin-top: 52px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .step-card {
+      background: var(--surface);
+      padding: 32px 24px;
+      border-right: 1px solid var(--border);
+      transition: background 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+
+    .step-card:last-child { border-right: none; }
+
+    .step-card::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--green);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .step-card:hover { background: #1c1c1c; }
+    .step-card:hover::after { opacity: 0.5; }
+
+    .step-arrow {
+      position: absolute; right: -8px; top: 50%; transform: translateY(-50%);
+      color: var(--faint); font-size: 12px; z-index: 1;
+    }
+
+    .step-card:last-child .step-arrow { display: none; }
+
+    .step-num {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+      color: var(--green); margin-bottom: 16px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .step-card h3 {
+      font-size: 15px; font-weight: 700;
+      margin-bottom: 8px; letter-spacing: -0.3px;
+    }
+
+    .step-card p {
+      font-size: 12px; color: var(--muted); line-height: 1.65;
+    }
+
+    /* ── COURSE PREVIEW ── */
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 10px;
+      margin-top: 44px;
+    }
+
+    .module-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px 22px;
+      display: flex; align-items: flex-start; gap: 16px;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+
+    .module-card.available {
+      border-color: rgba(57,255,20,0.3);
+      background: linear-gradient(135deg, rgba(57,255,20,0.04) 0%, var(--surface) 60%);
+    }
+
+    .module-card:hover {
+      border-color: var(--faint);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      transform: translateY(-2px);
+    }
+
+    .module-card.available:hover {
+      border-color: rgba(57,255,20,0.5);
+      box-shadow: 0 4px 24px rgba(57,255,20,0.08);
+    }
+
+    .module-num-badge {
+      min-width: 36px; height: 36px;
+      border-radius: 8px; background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .module-card.available .module-num-badge {
+      background: var(--green-dim);
+      border-color: rgba(57,255,20,0.3);
+      color: var(--green);
+    }
+
+    .module-info { flex: 1; }
+
+    .module-info h4 {
+      font-size: 14px; font-weight: 600; margin-bottom: 5px;
+      letter-spacing: -0.2px;
+    }
+
+    .module-info p {
+      font-size: 12px; color: var(--muted); line-height: 1.55;
+    }
+
+    .module-lock {
+      margin-left: auto;
+      font-size: 11px; color: var(--faint);
+      white-space: nowrap; padding-top: 2px;
+    }
+
+    .available-tag {
+      display: inline-flex; align-items: center;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: var(--green);
+      background: var(--green-dim);
+      border: 1px solid rgba(57,255,20,0.28);
+      border-radius: 5px; padding: 3px 8px;
+      margin-left: auto; flex-shrink: 0;
+    }
+
+    /* ── CASE STUDIES ── */
+    .case-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 52px;
+    }
+
+    .case-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 38px;
+      transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+    }
+
+    .case-card:hover {
+      border-color: rgba(57,255,20,0.25);
+      box-shadow: 0 8px 40px rgba(57,255,20,0.06);
+      transform: translateY(-3px);
+    }
+
+    .case-tag {
+      font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .case-card h3 {
+      font-size: 22px; font-weight: 800;
+      letter-spacing: -0.6px; margin-bottom: 24px;
+      line-height: 1.2;
+    }
+
+    .case-stats { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+
+    .case-stat {
+      display: flex; flex-direction: column; gap: 4px;
+    }
+
+    .case-stat .number {
+      font-size: 36px; font-weight: 800;
+      color: var(--green); letter-spacing: -1.5px;
+      text-shadow: 0 0 20px rgba(57,255,20,0.25);
+      line-height: 1;
+    }
+
+    .case-stat .label {
+      font-size: 12px; color: var(--muted); line-height: 1.5;
+    }
+
+    .case-divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+    .case-note {
+      font-size: 12px; color: var(--muted); line-height: 1.7;
+    }
+
+    /* ── WHAT YOU'LL BUILD ── */
+    .build-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 12px;
+      margin-top: 52px;
+    }
+
+    .build-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 30px;
+      transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+    }
+
+    .build-card:hover {
+      border-color: rgba(57,255,20,0.25);
+      box-shadow: 0 6px 32px rgba(57,255,20,0.06);
+      transform: translateY(-3px);
+    }
+
+    .build-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: var(--green-dim);
+      border: 1px solid rgba(57,255,20,0.2);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 18px; color: var(--green);
+    }
+
+    .build-card h3 {
+      font-size: 15px; font-weight: 700; margin-bottom: 12px;
+      letter-spacing: -0.3px;
+    }
+
+    .build-card ul { list-style: none; padding: 0; }
+
+    .build-card ul li {
+      font-size: 13px; color: var(--muted);
+      padding: 5px 0; display: flex; gap: 9px; align-items: flex-start;
+    }
+
+    .build-card ul li::before {
+      content: '';
+      display: block; min-width: 5px; height: 5px; border-radius: 50%;
+      background: var(--green);
+      margin-top: 5px;
+    }
+
+    /* ── PRICING ── */
+    .pricing-section { background: var(--surface); }
+
+    .pricing-card {
+      max-width: 500px; margin: 52px auto 0;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 44px;
+      position: relative;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .pricing-card:hover {
+      border-color: rgba(57,255,20,0.3);
+      box-shadow: 0 0 60px rgba(57,255,20,0.08);
+    }
+
+    .pricing-label {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+      text-transform: uppercase; color: var(--green);
+      background: var(--green-dim);
+      border: 1px solid rgba(57,255,20,0.25);
+      border-radius: 6px; padding: 5px 12px;
+      margin-bottom: 30px;
+    }
+
+    .price-row {
+      display: flex; align-items: baseline; gap: 14px;
+      margin-bottom: 6px;
+    }
+
+    .price-main {
+      font-size: 60px; font-weight: 900;
+      letter-spacing: -3px; color: var(--text);
+    }
+
+    .price-was {
+      font-size: 22px; color: var(--faint);
+      text-decoration: line-through; font-weight: 400;
+    }
+
+    .price-note {
+      font-size: 13px; color: var(--muted); margin-bottom: 30px;
+    }
+
+    .pricing-name {
+      font-size: 18px; font-weight: 700;
+      margin-bottom: 6px; letter-spacing: -0.4px;
+    }
+
+    .pricing-tagline {
+      font-size: 13px; color: var(--muted); margin-bottom: 30px; line-height: 1.6;
+    }
+
+    .features-list {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin-bottom: 34px;
+    }
+
+    .feature-item {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; color: var(--text);
+    }
+
+    .feature-item svg { flex-shrink: 0; color: var(--green); }
+
+    .btn-full {
+      width: 100%; padding: 17px;
+      background: var(--green); color: #000;
+      font-size: 15px; font-weight: 700;
+      border: 1px solid var(--green); border-radius: 10px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      letter-spacing: -0.1px;
+      animation: btnGlow 2.4s ease-in-out infinite;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+
+    .btn-full:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    .pricing-footer {
+      text-align: center; margin-top: 16px;
+      font-size: 12px; color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── FINAL CTA ── */
+    .final-cta {
+      text-align: center;
+      padding: 110px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .final-cta-card {
+      max-width: 640px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid rgba(57,255,20,0.2);
+      border-radius: 24px;
+      padding: 56px 48px;
+      position: relative;
+      box-shadow: 0 0 80px rgba(57,255,20,0.1), 0 0 160px rgba(57,255,20,0.05);
+    }
+
+    /* ambient green glow behind the card */
+    .final-cta-card::before {
+      content: '';
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 120%; height: 120%;
+      background: radial-gradient(ellipse, rgba(57,255,20,0.12) 0%, transparent 65%);
+      pointer-events: none; z-index: -1;
+      border-radius: 50%;
+    }
+
+    .final-cta h2 {
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 900; letter-spacing: -1.5px;
+      margin-bottom: 14px;
+    }
+
+    .final-cta-sub {
+      font-size: 16px; color: var(--muted);
+      margin-bottom: 36px; line-height: 1.6;
+    }
+
+    .final-cta-note {
+      margin-top: 16px;
+      font-size: 13px; color: var(--green);
+      font-weight: 500;
+    }
+
+    .final-cta-note2 {
+      margin-top: 6px;
+      font-size: 12px; color: var(--muted);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 36px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
+    }
+
+    footer p { font-size: 12px; color: var(--faint); }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      align-items: center; justify-content: center;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 44px;
+      width: 100%; max-width: 430px;
+      margin: 24px;
+      position: relative;
+      animation: modalIn 0.22s cubic-bezier(0.22,1,0.36,1);
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.96) translateY(12px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-close {
+      position: absolute; top: 18px; right: 18px;
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 16px;
+      width: 32px; height: 32px; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .modal-close:hover { background: var(--surface2); color: var(--text); }
+
+    .modal-icon {
+      width: 50px; height: 50px; border-radius: 13px;
+      background: var(--green-dim);
+      border: 1px solid rgba(57,255,20,0.25);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 22px; color: var(--green);
+    }
+
+    .modal h2 {
+      font-size: 24px; font-weight: 900;
+      letter-spacing: -0.8px; margin-bottom: 8px;
+    }
+
+    .modal h2 em { font-style: normal; color: var(--green); }
+
+    .modal p {
+      font-size: 14px; color: var(--muted);
+      line-height: 1.65; margin-bottom: 26px;
+    }
+
+    .modal label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: var(--text); margin-bottom: 8px; letter-spacing: 0.1px;
+    }
+
+    .modal input[type="email"] {
+      width: 100%;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 9px; padding: 13px 15px;
+      font-size: 14px; color: var(--text);
+      font-family: inherit;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      outline: none;
+      margin-bottom: 14px;
+    }
+
+    .modal input[type="email"]:focus {
+      border-color: rgba(57,255,20,0.5);
+      box-shadow: 0 0 0 3px rgba(57,255,20,0.07);
+    }
+
+    .modal input::placeholder { color: var(--faint); }
+
+    .modal-footer-note {
+      text-align: center; margin-top: 14px;
+      font-size: 11px; color: var(--faint);
+      line-height: 1.5;
+    }
+
+    /* ── HERO ENTRANCE ── */
+    .hero-content {
+      display: contents;
+    }
+
+    .hero .badge    { animation: fadeUp 0.55s 0.1s cubic-bezier(0.22,1,0.36,1) both; }
+    .hero h1        { animation: fadeUp 0.55s 0.2s cubic-bezier(0.22,1,0.36,1) both; }
+    .hero > p       { animation: fadeUp 0.55s 0.3s cubic-bezier(0.22,1,0.36,1) both; }
+    .hero-ctas      { animation: fadeUp 0.55s 0.38s cubic-bezier(0.22,1,0.36,1) both; }
+    .hero-note      { animation: fadeUp 0.55s 0.44s cubic-bezier(0.22,1,0.36,1) both; }
+    .waveform-wrap  { animation: fadeUp 0.55s 0.54s cubic-bezier(0.22,1,0.36,1) both; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .steps-grid { grid-template-columns: repeat(3, 1fr); }
+      .step-card { border-right: 1px solid var(--border); }
+      .step-card:nth-child(3) { border-right: none; }
+      .step-card:nth-child(4), .step-card:nth-child(5) { border-top: 1px solid var(--border); }
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      section { padding: 72px 20px; }
+      .founder-card { padding: 32px; }
+      .case-grid { grid-template-columns: 1fr; }
+      .features-list { grid-template-columns: 1fr; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .step-card {
+        border-right: none !important;
+        border-bottom: 1px solid var(--border);
+      }
+      .step-card:last-child { border-bottom: none; }
+      .step-arrow { display: none; }
+      footer { flex-direction: column; align-items: flex-start; }
+      .pricing-card { padding: 32px 24px; }
+      .hero h1 { letter-spacing: -2px; }
+    }
+
+    @media (max-width: 480px) {
+      .opp-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo">
+    <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="28" height="28" rx="7" fill="#39FF14" fill-opacity="0.10"/>
+      <rect width="28" height="28" rx="7" stroke="#39FF14" stroke-opacity="0.35" stroke-width="1"/>
+      <path d="M10 19V11l10-2v8" stroke="#39FF14" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="8.5" cy="19.5" r="2" fill="#39FF14"/>
+      <circle cx="18.5" cy="17.5" r="2" fill="#39FF14"/>
+    </svg>
+    <span style="background: linear-gradient(90deg, #f0f0f0 0%, #f0f0f0 50%, #39FF14 50%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">NeonArtist</span></a>
+  <ul class="nav-links">
+    <li><a href="#preview">Course Preview</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+  </ul>
+  <button class="btn-nav" onclick="openModal()">Claim Your Spot</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="badge">
+    <span class="badge-dot"></span>
+    Most people are still early. That won't last.
+  </div>
+
+  <h1>Build Your <em>AI Artist</em><br>Turn Ideas Into Income</h1>
+
+  <p>Create songs, build a faceless brand, go viral on TikTok, and release music on Spotify — without showing your face or knowing music theory.</p>
+
+  <div class="hero-ctas">
+    <button class="btn-primary" onclick="openModal()">
+      Claim Your Spot
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="btn-secondary" onclick="document.getElementById('preview').scrollIntoView({behavior:'smooth'})">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 5l3 2-3 2V5z" fill="currentColor"/></svg>
+      See the Course
+    </button>
+  </div>
+  <p class="hero-note">Join the waitlist — no payment today</p>
+
+  <div class="waveform-wrap" aria-hidden="true">
+    <canvas id="waveCanvas"></canvas>
+  </div>
+</section>
+
+<!-- FOUNDER -->
+<section class="founder-section">
+  <div class="section-inner">
+    <div class="founder-card fade-up">
+      <h3 class="founder-heading">"Hi, I'm Anton — founder of <span>NeonArtist</span>."</h3>
+      <p>I built this system because I saw a massive opportunity most people are completely missing. AI music is exploding. Faceless creators are already generating millions of streams and real income — without a studio, without showing their face, and without any music experience.</p>
+      <p>NeonArtist gives you the exact step-by-step system to do the same.</p>
+      <div class="founder-sig">
+        <div class="founder-avatar" style="background:none; border:2px solid rgba(57,255,20,0.3); overflow:hidden; padding:0;">
+          <img src="https://i.gyazo.com/471f031c99105967bff29faea915cd63.png" alt="Anton" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />
+        </div>
+        <span><strong>Anton</strong> — Founder, NeonArtist · Independent &amp; Signed Artist since 2019 · Runs AI music YouTube channels</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OPPORTUNITY -->
+<section class="opportunity-section">
+  <div class="section-inner">
+    <p class="eyebrow fade-up">The Opportunity</p>
+    <h2 class="section-title fade-up fade-up-delay-1">AI Music Is <span style="color:var(--green)">Exploding</span></h2>
+    <p class="section-sub fade-up fade-up-delay-2">AI artists are already generating millions of streams. Faceless creators are growing faster than ever. Right now the barrier is near zero — in 6–12 months, it won't be.</p>
+
+    <div class="opp-grid">
+      <div class="opp-card fade-up fade-up-delay-1">
+        <div class="opp-number">$7.8B</div>
+        <div class="opp-label">AI music market<br>projected by 2025</div>
+      </div>
+      <div class="opp-card fade-up fade-up-delay-2">
+        <div class="opp-number">100M+</div>
+        <div class="opp-label">AI-generated tracks<br>streamed every month</div>
+      </div>
+      <div class="opp-card fade-up fade-up-delay-3">
+        <div class="opp-number">1,200%</div>
+        <div class="opp-label">AI music uploads on<br>streaming platforms since 2022</div>
+      </div>
+      <div class="opp-card fade-up fade-up-delay-4">
+        <div class="opp-number">&lt;$50</div>
+        <div class="opp-label">Monthly cost to start<br>an AI music project</div>
+      </div>
+    </div>
+
+    <div class="opp-message fade-up">
+      <strong>The barrier is gone. The opportunity is here.</strong><br>
+      Most people are still not paying attention. That's your advantage.
+    </div>
+  </div>
+</section>
+
+<!-- SYSTEM -->
+<section>
+  <div class="section-inner">
+    <p class="eyebrow fade-up">The System</p>
+    <h2 class="section-title fade-up fade-up-delay-1">From idea to <span style="color:var(--green)">AI artist</span></h2>
+    <p class="section-sub fade-up fade-up-delay-2">One proven path. Six steps. Everything you need to go from zero to a live artist generating real income.</p>
+
+    <div class="steps-grid fade-up">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <h3>Idea</h3>
+        <p>Find your concept, direction, and niche before you build anything.</p>
+        <span class="step-arrow">›</span>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <h3>Artist</h3>
+        <p>Build your AI artist identity, name, logo, and brand from scratch.</p>
+        <span class="step-arrow">›</span>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <h3>Songs</h3>
+        <p>Create high-quality tracks that connect with real listeners.</p>
+        <span class="step-arrow">›</span>
+      </div>
+      <div class="step-card">
+        <div class="step-num">04</div>
+        <h3>Content</h3>
+        <p>Turn your songs into viral content that drives followers.</p>
+        <span class="step-arrow">›</span>
+      </div>
+      <div class="step-card">
+        <div class="step-num">05</div>
+        <h3>Audience</h3>
+        <p>Grow your fans and build a community that lasts.</p>
+        <span class="step-arrow">›</span>
+      </div>
+      <div class="step-card">
+        <div class="step-num">06</div>
+        <h3>Income</h3>
+        <p>Monetize across streams, sync, licensing, and sponsorships.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COURSE PREVIEW -->
+<section id="preview" style="background:var(--surface);">
+  <div class="section-inner">
+    <p class="eyebrow fade-up">Course Preview</p>
+    <h2 class="section-title fade-up fade-up-delay-1">12 modules. <span style="color:var(--green)">Complete system.</span></h2>
+    <p class="section-sub fade-up fade-up-delay-2">Every lesson is practical. Every module ends with something built. No fluff, no theory — just execution.</p>
+
+    <div class="modules-grid">
+      <div class="module-card available fade-up fade-up-delay-1">
+        <div class="module-num-badge">00</div>
+        <div class="module-info">
+          <h4>Welcome to NeonArtist</h4>
+          <p>What's possible with AI music in 2025 — and how to use this system.</p>
+        </div>
+        <span class="available-tag">Free</span>
+      </div>
+      <div class="module-card fade-up fade-up-delay-2">
+        <div class="module-num-badge">01</div>
+        <div class="module-info">
+          <h4>Build Your AI Artist</h4>
+          <p>Name, identity, logo, brand colours, and visual aesthetic.</p>
+        </div>
+        <span class="module-lock">🔒</span>
+      </div>
+      <div class="module-card fade-up fade-up-delay-3">
+        <div class="module-num-badge">02</div>
+        <div class="module-info">
+          <h4>Create Your First Song</h4>
+          <p>Suno walkthrough, prompts, and getting consistent quality.</p>
+        </div>
+        <span class="module-lock">🔒</span>
+      </div>
+      <div class="module-card fade-up fade-up-delay-1">
+        <div class="module-num-badge">03</div>
+        <div class="module-info">
+          <h4>Build Your Artist Profiles</h4>
+          <p>Spotify, YouTube, TikTok, and Instagram — set up and optimised.</p>
+        </div>
+        <span class="module-lock">🔒</span>
+      </div>
+      <div class="module-card fade-up fade-up-delay-2">
+        <div class="module-num-badge">04</div>
+        <div class="module-info">
+          <h4>Release on Spotify</h4>
+          <p>DistroKid walkthrough, artwork, metadata, and pre-save campaigns.</p>
+        </div>
+        <span class="module-lock">🔒</span>
+      </div>
+      <div class="module-card fade-up fade-up-delay-3">
+        <div class="module-num-badge">05</div>
+        <div class="module-info">
+          <h4>Pitch to Playlists</h4>
+          <p>Editorial submissions, SubmitHub, and curator outreach.</p>
+        </div>
+        <span class="module-lock">🔒</span>
+      </div>
+      <div class="module-card fade-up fade-up-delay-1">
+        <div class="module-num-badge">06</div>
+        <div class="module-info">
+          <h4>Create Viral Content</h4>
+          <p>YouTube mixes, TikTok clips, AI visuals, and the Human Strategy.</p>
+        </div>
+        <span class="module-lock">🔒</span>
+      </div>
+      <div class="module-card fade-up fade-up-delay-2">
+        <div class="module-num-badge">07</div>
+        <div class="module-info">
+          <h4>Grow Your Audience</h4>
+          <p>TikTok, Shorts, and Reels growth strategies that actually work.</p>
+        </div>
+        <span class="module-lock">🔒</span>
+      </div>
+      <div class="module-card fade-up fade-up-delay-3">
+        <div class="module-num-badge">08</div>
+        <div class="module-info">
+          <h4>Pitch to Blogs &amp; Press</h4>
+          <p>Press releases, music blogs, and building media relationships.</p>
+        </div>
+        <span class="module-lock">🔒</span>
+      </div>
+      <div class="module-card fade-up fade-up-delay-1">
+        <div class="module-num-badge">09</div>
+        <div class="module-info">
+          <h4>Monetise Your Artist</h4>
+          <p>Streaming royalties, AdSense, licensing, beats, and multiple income streams.</p>
+        </div>
+        <span class="module-lock">🔒</span>
+      </div>
+      <div class="module-card fade-up fade-up-delay-2">
+        <div class="module-num-badge">10</div>
+        <div class="module-info">
+          <h4>Scale and Automate</h4>
+          <p>Run multiple AI artists, batch content, and build a long-term business.</p>
+        </div>
+        <span class="module-lock">🔒</span>
+      </div>
+      <div class="module-card fade-up fade-up-delay-3">
+        <div class="module-num-badge">★</div>
+        <div class="module-info">
+          <h4>Bonus Toolkit</h4>
+          <p>Suno prompts, CapCut templates, pitch templates, Canva assets, press release.</p>
+        </div>
+        <span class="module-lock">🔒</span>
+      </div>
+    </div>
+
+    <div style="text-align:center; margin-top:36px;" class="fade-up">
+      <button class="btn-primary" onclick="openModal()">
+        Unlock Full Access
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS / CASE STUDIES -->
+<section id="results">
+  <div class="section-inner">
+    <p class="eyebrow fade-up">Real AI Artists. Real Results.</p>
+    <h2 class="section-title fade-up fade-up-delay-1">AI music isn't the future.<br><span style="color:var(--green)">It's happening now.</span></h2>
+
+    <div class="case-grid">
+      <div class="case-card fade-up fade-up-delay-2">
+        <div class="case-tag">Case Study 01 — Blow Records</div>
+        <h3>Zero to 80M+ streams in under a year</h3>
+        <div class="case-stats">
+          <div class="case-stat">
+            <span class="number">66M</span>
+            <span class="label">Spotify streams<br>on their #1 track</span>
+          </div>
+          <div class="case-stat">
+            <span class="number">1.6M</span>
+            <span class="label">TikTok videos created<br>under their sound</span>
+          </div>
+        </div>
+        <div class="case-divider"></div>
+        <p class="case-note">Built from scratch. No studio. No face. No prior audience. This is the playbook we teach.</p>
+      </div>
+      <div class="case-card fade-up fade-up-delay-3">
+        <div class="case-tag">Case Study 02 — Xania Monet</div>
+        <h3>AI R&amp;B artist. Billboard Top 10. Multimillion deal.</h3>
+        <div class="case-stats">
+          <div class="case-stat">
+            <span class="number">Top 10</span>
+            <span class="label">Billboard R&amp;B<br>Digital Song Sales</span>
+          </div>
+          <div class="case-stat">
+            <span class="number">$Multi-M</span>
+            <span class="label">Deal signed with<br>Hallwood Media</span>
+          </div>
+        </div>
+        <div class="case-divider"></div>
+        <p class="case-note">Built entirely with AI. No real person behind the music. Proof AI artists are being taken seriously at industry level.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT YOU'LL BUILD -->
+<section style="background:var(--surface);">
+  <div class="section-inner">
+    <p class="eyebrow fade-up">What You'll Build</p>
+    <h2 class="section-title fade-up fade-up-delay-1">Not just music.<br><span style="color:var(--green)">A real business.</span></h2>
+    <p class="section-sub fade-up fade-up-delay-2">By the end of NeonArtist you won't just have songs — you'll have a brand, an audience, and income that grows while you sleep.</p>
+
+    <div class="build-grid">
+      <div class="build-card fade-up fade-up-delay-1">
+        <div class="build-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.4"/><path d="M2 17c0-3.866 3.134-7 7-7s7 3.134 7 7" stroke="currentColor" stroke-width="1.4"/></svg>
+        </div>
+        <h3>A Faceless AI Artist</h3>
+        <ul>
+          <li>A unique identity that stands out</li>
+          <li>A brand that connects and lasts</li>
+          <li>Freedom to create on your terms</li>
+        </ul>
+      </div>
+      <div class="build-card fade-up fade-up-delay-2">
+        <div class="build-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="4" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M7 8l4 2-4 2V8z" fill="currentColor"/></svg>
+        </div>
+        <h3>A Content Engine</h3>
+        <ul>
+          <li>High-quality songs, clips, and visuals</li>
+          <li>Viral-ready content that gets attention</li>
+          <li>A system that keeps you consistent</li>
+        </ul>
+      </div>
+      <div class="build-card fade-up fade-up-delay-3">
+        <div class="build-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="5" cy="14" r="2" stroke="currentColor" stroke-width="1.4"/><circle cx="13" cy="14" r="2" stroke="currentColor" stroke-width="1.4"/><circle cx="9" cy="5" r="2" stroke="currentColor" stroke-width="1.4"/><path d="M9 7v4M5 12V9l4-2 4 2v3" stroke="currentColor" stroke-width="1.2"/></svg>
+        </div>
+        <h3>A Growing Audience</h3>
+        <ul>
+          <li>Fans that listen, follow, and share</li>
+          <li>Communities that engage and stay</li>
+          <li>Reach that compounds over time</li>
+        </ul>
+      </div>
+      <div class="build-card fade-up fade-up-delay-4">
+        <div class="build-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 13l4-4 3 3 5-7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>A Scalable Income System</h3>
+        <ul>
+          <li>Multiple income streams, one system</li>
+          <li>Automated workflows that scale</li>
+          <li>Real income. Real freedom.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="pricing-section">
+  <div class="section-inner" style="text-align:center;">
+    <p class="eyebrow fade-up">Early Access</p>
+    <h2 class="section-title fade-up fade-up-delay-1">Lock in founding<br><span style="color:var(--green)">member pricing.</span></h2>
+    <p class="section-sub fade-up fade-up-delay-2" style="margin:0 auto;">First members get $297 — price increases at launch. No payment today.</p>
+
+    <div class="pricing-card fade-up fade-up-delay-3">
+      <div class="pricing-label">
+        <span class="badge-dot"></span>
+        Pre-launch — Waitlist open
+      </div>
+
+      <div class="price-row">
+        <span class="price-main">$297</span>
+        <span class="price-was">$497</span>
+      </div>
+      <p class="price-note">Founding member price · Limited spots available</p>
+
+      <p class="pricing-name">AI Artist Complete</p>
+      <p class="pricing-tagline">Join the waitlist now to claim 40% off when we open the doors. Founding members lock in this price forever.</p>
+
+      <div class="features-list">
+        <div class="feature-item">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#39FF14" stroke-width="1.2"/><path d="M4.5 7.5l2 2 4-4" stroke="#39FF14" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Full 12-module course
+        </div>
+        <div class="feature-item">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#39FF14" stroke-width="1.2"/><path d="M4.5 7.5l2 2 4-4" stroke="#39FF14" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          100+ video lessons
+        </div>
+        <div class="feature-item">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#39FF14" stroke-width="1.2"/><path d="M4.5 7.5l2 2 4-4" stroke="#39FF14" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Lifetime updates
+        </div>
+        <div class="feature-item">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#39FF14" stroke-width="1.2"/><path d="M4.5 7.5l2 2 4-4" stroke="#39FF14" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Prompt + template library
+        </div>
+        <div class="feature-item">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#39FF14" stroke-width="1.2"/><path d="M4.5 7.5l2 2 4-4" stroke="#39FF14" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Cover art &amp; visual presets
+        </div>
+        <div class="feature-item">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#39FF14" stroke-width="1.2"/><path d="M4.5 7.5l2 2 4-4" stroke="#39FF14" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Release-day playbook
+        </div>
+        <div class="feature-item">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#39FF14" stroke-width="1.2"/><path d="M4.5 7.5l2 2 4-4" stroke="#39FF14" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Private student community
+        </div>
+        <div class="feature-item">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#39FF14" stroke-width="1.2"/><path d="M4.5 7.5l2 2 4-4" stroke="#39FF14" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          All future modules included
+        </div>
+      </div>
+
+      <button class="btn-full" onclick="openModal()">
+        Claim Your Spot
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <p class="pricing-footer">Founding members lock in the lowest price — forever · No payment today</p>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="final-cta-card fade-up">
+    <h2>Join the <span style="color:var(--green)">NeonArtist</span> waitlist</h2>
+    <p class="final-cta-sub">Get early access when we launch and lock in 50% off the full course.</p>
+    <button class="btn-primary" onclick="openModal()" style="margin:0 auto;">
+      Claim Your Spot
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <p class="final-cta-note">Founding members get the lowest launch price.</p>
+    <p class="final-cta-note2">Limited early spots available</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2025 NeonArtist. All rights reserved.</p>
+  <p>neonartist.app</p>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modal-inner">
+    <button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>
+    <div class="modal-icon">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="5" width="16" height="13" rx="2" stroke="#39FF14" stroke-width="1.4"/><path d="M3 9l8 5 8-5" stroke="#39FF14" stroke-width="1.4"/></svg>
+    </div>
+    <h2>You're <em>early.</em></h2>
+    <p>Get early access and lock in founding member pricing — before we open the doors.</p>
+
+    <label for="email-input">Email address</label>
+    <input type="email" id="email-input" placeholder="you@example.com" autocomplete="email" />
+
+    <button class="btn-full" id="submit-btn" onclick="handleSubmit()">
+      Secure My Spot
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <p class="modal-footer-note">No spam. Founding members get first access and the lowest price — forever.</p>
+  </div>
+</div>
+
+<script>
+  /* ─── NAV SCROLL ─── */
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 40);
+  }, { passive: true });
+
+  /* ─── CANVAS WAVEFORM ─── */
+  (function() {
+    const canvas = document.getElementById('waveCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const BAR_COUNT = 48;
+    const GREEN = '#39FF14';
+
+    // Each bar gets its own speed and amplitude multiplier for organic feel
+    const bars = Array.from({ length: BAR_COUNT }, () => ({
+      phase:  Math.random() * Math.PI * 2,
+      speed:  0.018 + Math.random() * 0.032,
+      amp:    0.3  + Math.random() * 0.7,
+      base:   0.08 + Math.random() * 0.15,
+    }));
+
+    function resize() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width  = rect.width  * dpr;
+      canvas.height = 72          * dpr;
+      canvas.style.width  = rect.width + 'px';
+      canvas.style.height = '72px';
+      ctx.scale(dpr, dpr);
+    }
+
+    resize();
+    window.addEventListener('resize', resize, { passive: true });
+
+    function draw() {
+      const W = parseFloat(canvas.style.width);
+      const H = 72;
+      ctx.clearRect(0, 0, W, H);
+
+      const barW = 3;
+      const gap  = (W - barW * BAR_COUNT) / (BAR_COUNT - 1);
+      const maxH = H * 0.88;
+
+      bars.forEach((b, i) => {
+        b.phase += b.speed;
+        // Combine two sine waves for organic motion
+        const wave = (Math.sin(b.phase) * 0.65 + Math.sin(b.phase * 1.7 + 1.2) * 0.35);
+        const height = Math.max(4, (b.base + b.amp * (wave * 0.5 + 0.5)) * maxH);
+
+        const x = i * (barW + gap);
+        const y = (H - height) / 2;
+
+        // Glow
+        ctx.shadowColor = GREEN;
+        ctx.shadowBlur  = 6 + height * 0.06;
+
+        // Bar gradient — bright at center top, dimmer at edges
+        const grad = ctx.createLinearGradient(x, y, x, y + height);
+        grad.addColorStop(0,   'rgba(57,255,20,0.9)');
+        grad.addColorStop(0.5, 'rgba(57,255,20,0.55)');
+        grad.addColorStop(1,   'rgba(57,255,20,0.15)');
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.roundRect(x, y, barW, height, 2);
+        ctx.fill();
+      });
+
+      requestAnimationFrame(draw);
+    }
+
+    // Only animate when canvas is in/near viewport
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        requestAnimationFrame(draw);
+        observer.disconnect();
+      }
+    });
+    observer.observe(canvas);
+  })();
+
+  /* ─── SCROLL FADE-UP ─── */
+  const fadeEls = document.querySelectorAll('.fade-up');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  fadeEls.forEach(el => io.observe(el));
+
+  /* ─── MODAL ─── */
+  function openModal() {
+    document.getElementById('modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => document.getElementById('email-input')?.focus(), 120);
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function handleOverlayClick(e) {
+    if (e.target === document.getElementById('modal')) closeModal();
+  }
+
+  function handleSubmit() {
+    const input = document.getElementById('email-input');
+    if (!input) return;
+    const email = input.value.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      input.style.borderColor = 'rgba(255,80,80,0.6)';
+      input.style.boxShadow   = '0 0 0 3px rgba(255,80,80,0.07)';
+      input.focus();
+      return;
+    }
+
+    // ── Mailchimp JSONP (works from browser, no CORS) ────────────────────────
+    (function(email) {
+      const cb = 'mc_' + Date.now();
+      window[cb] = function() { delete window[cb]; script.remove(); };
+      const script = document.createElement('script');
+      script.src = 'https://us16.list-manage.com/subscribe/post-json?u=b83d89ae1e2974d572a36faea&id=2f3acf1f5d&EMAIL=' + encodeURIComponent(email) + '&c=' + cb;
+      document.body.appendChild(script);
+    })(email);
+    // ────────────────────────────────────────────────────────────────────────
+
+    // Success state
+    document.getElementById('modal-inner').innerHTML = `
+      <div style="text-align:center;padding:24px 0;">
+        <div style="width:56px;height:56px;border-radius:50%;background:var(--green-dim);border:1px solid rgba(57,255,20,0.3);display:flex;align-items:center;justify-content:center;margin:0 auto 22px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 12l5 5 11-11" stroke="#39FF14" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h2 style="font-size:24px;font-weight:900;letter-spacing:-0.8px;margin-bottom:10px;">You're on the list.</h2>
+        <p style="color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:0;">We'll email you the moment NeonArtist launches.<br>Founding members get first access and the lowest price — forever.</p>
+        <button class="btn-full" style="margin-top:28px;" onclick="closeModal()">
+          Done
+        </button>
+      </div>
+    `;
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  // ── Confirmation page ────────────────────────────────────────────────────
+  if (new URLSearchParams(window.location.search).get('confirmed') === 'true') {
+    document.body.insertAdjacentHTML('beforeend', `
+      <div id="confirmed-overlay" style="
+        position:fixed;inset:0;z-index:300;
+        background:rgba(0,0,0,0.85);
+        backdrop-filter:blur(8px);
+        display:flex;align-items:center;justify-content:center;
+        animation:fadeUp 0.3s ease both;
+      ">
+        <div style="
+          background:#181818;
+          border:1px solid rgba(57,255,20,0.3);
+          border-radius:22px;
+          padding:48px 44px;
+          max-width:420px;width:100%;margin:24px;
+          text-align:center;
+          box-shadow:0 0 80px rgba(57,255,20,0.1);
+        ">
+          <div style="width:60px;height:60px;border-radius:50%;background:rgba(57,255,20,0.1);border:1px solid rgba(57,255,20,0.3);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M4 13l6 6 12-12" stroke="#39FF14" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h2 style="font-size:26px;font-weight:900;letter-spacing:-1px;margin-bottom:10px;">You're confirmed.</h2>
+          <p style="font-size:14px;color:#888;line-height:1.7;margin-bottom:28px;">You're on the NeonArtist founding member list.<br>We'll email you the moment we launch — you'll get first access and the lowest price forever.</p>
+          <button onclick="document.getElementById('confirmed-overlay').remove(); window.history.replaceState({}, '', '/');" style="
+            width:100%;padding:15px;
+            background:#39FF14;color:#000;
+            font-size:15px;font-weight:700;
+            border:none;border-radius:10px;cursor:pointer;
+            font-family:inherit;letter-spacing:-0.1px;
+          ">Let's go →</button>
+        </div>
+      </div>
+    `);
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // Enter key in email input triggers submit
+  document.getElementById('email-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleSubmit();
+  });
+</script>
+
+</body>
+</html>
