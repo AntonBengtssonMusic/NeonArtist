@@ -213,7 +213,7 @@
 
     <div id="mc_embed_shell">
       <div id="mc_embed_signup">
-        <form action="https://app.us16.list-manage.com/subscribe/post?u=b83d89ae1e2974d572a36faea&amp;id=2f3acf1f5d&amp;f_id=009dc2e1f0" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank">
+        <form action="https://app.us16.list-manage.com/subscribe/post?u=b83d89ae1e2974d572a36faea&amp;id=2f3acf1f5d&amp;f_id=009dc2e1f0" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="mc-hidden-iframe">
           <div id="mc_embed_signup_scroll">
             <h2>Subscribe</h2>
             <div class="indicates-required"><span class="asterisk">*</span> indicates required</div>
@@ -240,6 +240,18 @@
     <a class="back" href="/">← Back to home</a>
   </div>
 
+  <!-- success overlay -->
+  <div id="success-overlay" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:999; display:none; align-items:center; justify-content:center; padding:24px;">
+    <div style="text-align:center; max-width:420px;">
+      <div style="font-size:48px; margin-bottom:24px;">🎉</div>
+      <h2 style="font-size:28px; font-weight:900; letter-spacing:-1px; margin-bottom:12px;">You're on the list.</h2>
+      <p style="color:var(--muted); font-size:15px; line-height:1.7; margin-bottom:32px;">Thank you for joining the NeonArtist waitlist.<br>We'll reach out when the course goes live.</p>
+      <a href="/" style="display:inline-block; background:var(--green); color:#000; font-weight:700; font-size:15px; padding:14px 32px; border-radius:10px; text-decoration:none;">Back to home</a>
+    </div>
+  </div>
+
+  <iframe name="mc-hidden-iframe" id="mc-hidden-iframe" style="display:none;" aria-hidden="true"></iframe>
+
   <script src="//s3.amazonaws.com/downloads.mailchimp.com/js/mc-validate.js"></script>
   <script>
     (function($) {
@@ -247,6 +259,13 @@
       fnames[0]='EMAIL'; ftypes[0]='email';
     }(jQuery));
     var $mcj = jQuery.noConflict(true);
+
+    document.getElementById('mc-embedded-subscribe-form').addEventListener('submit', function() {
+      setTimeout(function() {
+        var overlay = document.getElementById('success-overlay');
+        overlay.style.display = 'flex';
+      }, 800);
+    });
   </script>
 
 </body>
