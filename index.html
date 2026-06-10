@@ -908,7 +908,7 @@
     <li><a href="#results">Results</a></li>
     <li><a href="#pricing">Pricing</a></li>
   </ul>
-  <button class="btn-nav" onclick="openModal()">Claim Your Spot</button>
+  <button class="btn-nav" onclick="window.location.href='/waitlist'">Claim Your Spot</button>
 </nav>
 
 <!-- HERO -->
@@ -923,7 +923,7 @@
   <p>Create songs, build a faceless brand, go viral on TikTok, and release music on Spotify — without showing your face or knowing music theory.</p>
 
   <div class="hero-ctas">
-    <button class="btn-primary" onclick="openModal()">
+    <button class="btn-primary" onclick="window.location.href='/waitlist'">
       Claim Your Spot
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
@@ -1143,7 +1143,7 @@
     </div>
 
     <div style="text-align:center; margin-top:36px;" class="fade-up">
-      <button class="btn-primary" onclick="openModal()">
+      <button class="btn-primary" onclick="window.location.href='/waitlist'">
         Unlock Full Access
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
@@ -1307,7 +1307,7 @@
         </div>
       </div>
 
-      <button class="btn-full" onclick="openModal()">
+      <button class="btn-full" onclick="window.location.href='/waitlist'">
         Claim Your Spot
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
@@ -1321,7 +1321,7 @@
   <div class="final-cta-card fade-up">
     <h2>Join the <span style="color:var(--green)">NeonArtist</span> waitlist</h2>
     <p class="final-cta-sub">Get early access when we launch and lock in 50% off the full course.</p>
-    <button class="btn-primary" onclick="openModal()" style="margin:0 auto;">
+    <button class="btn-primary" onclick="window.location.href='/waitlist'" style="margin:0 auto;">
       Claim Your Spot
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
@@ -1480,13 +1480,31 @@
       return;
     }
 
-    // ── Mailchimp JSONP (works from browser, no CORS) ────────────────────────
+    // ── Mailchimp hidden iframe POST (no CORS, no backend needed) ───────────
     (function(email) {
-      const cb = 'mc_' + Date.now();
-      window[cb] = function() { delete window[cb]; script.remove(); };
-      const script = document.createElement('script');
-      script.src = 'https://us16.list-manage.com/subscribe/post-json?u=b83d89ae1e2974d572a36faea&id=2f3acf1f5d&EMAIL=' + encodeURIComponent(email) + '&c=' + cb;
-      document.body.appendChild(script);
+      let iframe = document.getElementById('mc-iframe');
+      if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = 'mc-iframe';
+        iframe.name = 'mc-iframe';
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+      }
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = 'https://us16.list-manage.com/subscribe/post?u=b83d89ae1e2974d572a36faea&id=2f3acf1f5d';
+      form.target = 'mc-iframe';
+      form.style.display = 'none';
+      const addField = (name, value) => {
+        const input = document.createElement('input');
+        input.type = 'hidden'; input.name = name; input.value = value;
+        form.appendChild(input);
+      };
+      addField('EMAIL', email);
+      addField('b_b83d89ae1e2974d572a36faea_2f3acf1f5d', ''); // honeypot
+      document.body.appendChild(form);
+      form.submit();
+      setTimeout(() => form.remove(), 3000);
     })(email);
     // ────────────────────────────────────────────────────────────────────────
 

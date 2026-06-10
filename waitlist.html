@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Join the Waitlist — NeonArtist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #111111;
+      --surface:    #181818;
+      --border:     #2a2a2a;
+      --text:       #f0f0f0;
+      --muted:      #888;
+      --green:      #39FF14;
+      --green-dim:  rgba(57,255,20,0.10);
+      --green-glow: rgba(57,255,20,0.28);
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+    }
+
+    .logo {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      text-decoration: none;
+      background: linear-gradient(90deg, #f0f0f0 0%, #f0f0f0 50%, #39FF14 50%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 480px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px;
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--green-dim);
+      border: 1px solid rgba(57,255,20,0.25);
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+
+    h1 span { color: var(--green); }
+
+    p.sub {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.65;
+      margin-bottom: 36px;
+    }
+
+    /* ── Mailchimp form overrides ── */
+    #mc_embed_signup { background: transparent !important; width: 100% !important; }
+    #mc_embed_signup_scroll h2 { display: none; }
+    .indicates-required { display: none; }
+
+    #mc_embed_signup .mc-field-group {
+      width: 100% !important;
+      padding: 0 !important;
+      margin-bottom: 16px;
+    }
+
+    #mc_embed_signup .mc-field-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-align: left;
+    }
+
+    #mc_embed_signup input[type="email"] {
+      width: 100% !important;
+      background: var(--bg) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 10px !important;
+      color: var(--text) !important;
+      font-family: 'Inter', sans-serif !important;
+      font-size: 15px !important;
+      padding: 14px 16px !important;
+      outline: none !important;
+      transition: border-color 0.2s, box-shadow 0.2s !important;
+    }
+
+    #mc_embed_signup input[type="email"]:focus {
+      border-color: rgba(57,255,20,0.5) !important;
+      box-shadow: 0 0 0 3px rgba(57,255,20,0.07) !important;
+    }
+
+    #mc_embed_signup .clear {
+      width: 100% !important;
+      margin-top: 4px;
+    }
+
+    #mc_embed_signup input[type="submit"],
+    #mc_embed_signup .button {
+      width: 100% !important;
+      background: var(--green) !important;
+      color: #000 !important;
+      font-family: 'Inter', sans-serif !important;
+      font-size: 15px !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.3px !important;
+      border: none !important;
+      border-radius: 10px !important;
+      padding: 15px !important;
+      cursor: pointer !important;
+      transition: opacity 0.2s, box-shadow 0.2s !important;
+      height: auto !important;
+      line-height: normal !important;
+    }
+
+    #mc_embed_signup input[type="submit"]:hover,
+    #mc_embed_signup .button:hover {
+      opacity: 0.88 !important;
+      box-shadow: 0 0 24px rgba(57,255,20,0.35) !important;
+    }
+
+    #mce-responses { width: 100%; }
+
+    #mce-error-response {
+      background: rgba(255,80,80,0.08) !important;
+      border: 1px solid rgba(255,80,80,0.3) !important;
+      border-radius: 8px !important;
+      color: #ff6b6b !important;
+      font-size: 13px !important;
+      padding: 10px 14px !important;
+      margin-top: 12px !important;
+      text-align: left !important;
+    }
+
+    #mce-success-response {
+      background: var(--green-dim) !important;
+      border: 1px solid rgba(57,255,20,0.25) !important;
+      border-radius: 8px !important;
+      color: var(--green) !important;
+      font-size: 13px !important;
+      padding: 10px 14px !important;
+      margin-top: 12px !important;
+      text-align: left !important;
+    }
+
+    .back {
+      display: inline-block;
+      margin-top: 28px;
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+    }
+    .back:hover { color: var(--text); }
+
+    @media (max-width: 520px) {
+      .card { padding: 36px 24px; }
+      h1 { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a class="logo" href="/">NeonArtist</a>
+  </nav>
+
+  <div class="card">
+    <div class="badge">Founding Member Access</div>
+    <h1>You're early.<br><span>Lock in your spot.</span></h1>
+    <p class="sub">Get early access and founding member pricing — before we open the doors.</p>
+
+    <div id="mc_embed_shell">
+      <div id="mc_embed_signup">
+        <form action="https://app.us16.list-manage.com/subscribe/post?u=b83d89ae1e2974d572a36faea&amp;id=2f3acf1f5d&amp;f_id=009dc2e1f0" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank">
+          <div id="mc_embed_signup_scroll">
+            <h2>Subscribe</h2>
+            <div class="indicates-required"><span class="asterisk">*</span> indicates required</div>
+            <div class="mc-field-group">
+              <label for="mce-EMAIL">Email address</label>
+              <input type="email" name="EMAIL" class="required email" id="mce-EMAIL" required placeholder="you@example.com" autocomplete="email" />
+            </div>
+            <div hidden><input type="hidden" name="tags" value="207"></div>
+            <div id="mce-responses" class="clear">
+              <div class="response" id="mce-error-response" style="display:none;"></div>
+              <div class="response" id="mce-success-response" style="display:none;"></div>
+            </div>
+            <div style="position:absolute;left:-5000px;" aria-hidden="true">
+              <input type="text" name="b_b83d89ae1e2974d572a36faea_2f3acf1f5d" tabindex="-1" value="">
+            </div>
+            <div class="clear">
+              <input type="submit" name="subscribe" id="mc-embedded-subscribe" class="button" value="Claim Your Spot →">
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <a class="back" href="/">← Back to home</a>
+  </div>
+
+  <script src="//s3.amazonaws.com/downloads.mailchimp.com/js/mc-validate.js"></script>
+  <script>
+    (function($) {
+      window.fnames = new Array(); window.ftypes = new Array();
+      fnames[0]='EMAIL'; ftypes[0]='email';
+    }(jQuery));
+    var $mcj = jQuery.noConflict(true);
+  </script>
+
+</body>
+</html>
