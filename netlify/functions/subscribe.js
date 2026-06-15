@@ -24,7 +24,7 @@ exports.handler = async (event) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": "Basic " + Buffer.from("anystring:" + process.env.MAILCHIMP_API_KEY).toString("base64"),
+      "Authorization": "Basic " + Buffer.from("anystring:eb19dc4676b14ec549cda62363e66b33-us16").toString("base64"),
     },
     body: JSON.stringify({ email_address: email, status: "subscribed" }),
   });
