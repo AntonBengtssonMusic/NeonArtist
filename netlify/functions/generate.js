@@ -43,7 +43,7 @@ Label each section clearly. Write full lyrics — not placeholders. Make it emot
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-api-key": "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",
+      "x-api-key": process.env.ANTHROPIC_API_KEY,
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
