@@ -235,7 +235,17 @@
       <button class="tab" onclick="switchTab('lyrics')">🎤 Lyric Generator</button>
     </div>
 
-    <div class="form-card">
+    <div class="form-card" style="position:relative;">
+
+      <!-- LOCKED OVERLAY -->
+      <div id="locked-overlay" style="position:absolute;inset:0;background:rgba(17,17,17,0.92);border-radius:16px;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;backdrop-filter:blur(4px);">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><rect x="10" y="18" width="20" height="16" rx="4" stroke="#39FF14" stroke-width="1.5"/><path d="M14 18v-5a6 6 0 0 1 12 0v5" stroke="#39FF14" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <div style="text-align:center;">
+          <div style="font-size:18px;font-weight:800;color:#f0f0f0;margin-bottom:8px;">Join the Waitlist to Access</div>
+          <div style="font-size:14px;color:#888;">The generator unlocks when you claim your spot.</div>
+        </div>
+        <button class="btn-generate" style="width:auto;padding:14px 32px;" onclick="window.location.href='/waitlist'">Claim Your Spot</button>
+      </div>
 
       <!-- PROMPT PANEL -->
       <div class="panel active" id="panel-prompt">
@@ -316,9 +326,8 @@
       if (type === 'prompt') {
         payload.genre = document.getElementById('p-genre').value.trim();
         payload.artist = document.getElementById('p-artist').value.trim();
-        payload.topic = document.getElementById('p-topic').value.trim();
         payload.mood = document.getElementById('p-mood').value.trim();
-        if (!payload.genre && !payload.topic) {
+        if (!payload.genre) {
           document.getElementById('p-genre').focus();
           return;
         }
@@ -338,7 +347,7 @@
       outputCard.classList.remove('visible');
 
       try {
-        const res = await fetch('/api/generate', {
+        const res = await fetch('https://neonartist.neonartistai.workers.dev/api/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
