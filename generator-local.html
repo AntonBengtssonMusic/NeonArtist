@@ -7,203 +7,54 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet" />
-  <!-- Meta Pixel Code -->
-  <script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','926488228247986');fbq('track','PageView');</script>
-  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=926488228247986&ev=PageView&noscript=1"/></noscript>
-  <!-- End Meta Pixel Code -->
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg:         #111111;
-      --surface:    #181818;
-      --surface2:   #1f1f1f;
-      --border:     #2a2a2a;
-      --text:       #f0f0f0;
-      --muted:      #888;
-      --green:      #39FF14;
-      --green-dim:  rgba(57,255,20,0.10);
-      --green-glow: rgba(57,255,20,0.28);
+      --bg: #111111; --surface: #181818; --surface2: #1f1f1f;
+      --border: #2a2a2a; --text: #f0f0f0; --muted: #888;
+      --green: #39FF14; --green-dim: rgba(57,255,20,0.10); --green-glow: rgba(57,255,20,0.28);
     }
-
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      -webkit-font-smoothing: antialiased;
-      min-height: 100vh;
-    }
-
-    nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 18px 32px;
-      background: rgba(17,17,17,0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .nav-logo {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      text-decoration: none;
-      font-family: 'Orbitron', sans-serif;
-      font-weight: 700;
-      font-size: 17px;
-    }
-
-    .nav-logo span {
-      background: linear-gradient(90deg, #f0f0f0 0%, #f0f0f0 50%, #39FF14 50%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 18px 32px; background: rgba(17,17,17,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+    .nav-logo { display: flex; align-items: center; gap: 9px; text-decoration: none; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 17px; }
+    .nav-logo span { background: linear-gradient(90deg, #f0f0f0 0%, #f0f0f0 50%, #39FF14 50%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     .nav-links { display: flex; list-style: none; gap: 28px; }
     .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
     .nav-links a:hover { color: var(--text); }
     .nav-links a.active { color: var(--green); }
-
-    .btn-nav {
-      background: var(--green); color: #000; border: none; border-radius: 8px;
-      padding: 9px 20px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif;
-    }
-
-    .page {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 110px 24px 80px;
-    }
-
-    .badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--green-dim); border: 1px solid rgba(57,255,20,0.2);
-      color: var(--green); font-size: 11px; font-weight: 600;
-      letter-spacing: 1.5px; text-transform: uppercase;
-      padding: 5px 14px; border-radius: 20px; margin-bottom: 24px;
-    }
-
+    .btn-nav { background: var(--green); color: #000; border: none; border-radius: 8px; padding: 9px 20px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; }
+    .page { max-width: 720px; margin: 0 auto; padding: 110px 24px 80px; }
+    .badge { display: inline-flex; align-items: center; gap: 8px; background: var(--green-dim); border: 1px solid rgba(57,255,20,0.2); color: var(--green); font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; margin-bottom: 24px; }
     h1 { font-size: 40px; font-weight: 900; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 12px; }
     h1 em { font-style: normal; color: var(--green); }
-
     .sub { color: var(--muted); font-size: 16px; line-height: 1.65; margin-bottom: 48px; }
-
-    /* TABS */
-    .tabs {
-      display: flex; gap: 4px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 4px;
-      margin-bottom: 24px;
-    }
-
-    .tab {
-      flex: 1; padding: 11px; border: none; border-radius: 9px;
-      font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
-      cursor: pointer; transition: all 0.2s; color: var(--muted); background: transparent;
-    }
-
+    .tabs { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 4px; margin-bottom: 24px; }
+    .tab { flex: 1; padding: 11px; border: none; border-radius: 9px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; color: var(--muted); background: transparent; }
     .tab.active { background: var(--surface2); color: var(--text); }
-
-    /* FORM */
-    .form-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 36px;
-      display: flex; flex-direction: column; gap: 20px;
-    }
-
+    .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 36px; display: flex; flex-direction: column; gap: 20px; }
     .field { display: flex; flex-direction: column; gap: 8px; }
-
     label { font-size: 13px; font-weight: 600; color: var(--muted); letter-spacing: 0.3px; }
-
-    input[type="text"], textarea {
-      background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
-      color: var(--text); font-family: 'Inter', sans-serif; font-size: 15px;
-      padding: 13px 16px; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
-      resize: none; width: 100%;
-    }
-
+    input[type="text"], textarea { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 15px; padding: 13px 16px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; resize: none; width: 100%; }
     input[type="text"]::placeholder, textarea::placeholder { color: #444; }
-
-    input[type="text"]:focus, textarea:focus {
-      border-color: rgba(57,255,20,0.4);
-      box-shadow: 0 0 0 3px rgba(57,255,20,0.06);
-    }
-
-    .btn-generate {
-      width: 100%; padding: 16px; border-radius: 10px; border: none;
-      font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700;
-      cursor: pointer; background: var(--green); color: #000;
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-      transition: opacity 0.2s, box-shadow 0.2s; margin-top: 4px;
-    }
-
+    input[type="text"]:focus, textarea:focus { border-color: rgba(57,255,20,0.4); box-shadow: 0 0 0 3px rgba(57,255,20,0.06); }
+    .btn-generate { width: 100%; padding: 16px; border-radius: 10px; border: none; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; background: var(--green); color: #000; display: flex; align-items: center; justify-content: center; gap: 10px; transition: opacity 0.2s, box-shadow 0.2s; margin-top: 4px; }
     .btn-generate:hover { opacity: 0.88; box-shadow: 0 0 24px var(--green-glow); }
     .btn-generate:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
-
-    /* OUTPUT */
-    .output-card {
-      margin-top: 24px;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 28px;
-      display: none;
-    }
-
+    .output-card { margin-top: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; display: none; }
     .output-card.visible { display: block; }
-
-    .output-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 16px;
-    }
-
-    .output-label {
-      font-size: 11px; font-weight: 700; letter-spacing: 2px;
-      text-transform: uppercase; color: var(--green);
-    }
-
-    .btn-copy {
-      background: var(--surface2); border: 1px solid var(--border);
-      color: var(--muted); font-size: 12px; font-weight: 600;
-      padding: 6px 14px; border-radius: 7px; cursor: pointer;
-      font-family: 'Inter', sans-serif; transition: all 0.2s;
-    }
-
+    .output-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .output-label { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--green); }
+    .btn-copy { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 7px; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
     .btn-copy:hover { border-color: var(--green); color: var(--green); }
-
-    .output-text {
-      font-size: 15px; color: var(--text); line-height: 1.75;
-      white-space: pre-wrap; font-family: 'Inter', sans-serif;
-    }
-
-    .spinner {
-      width: 18px; height: 18px;
-      border: 2px solid rgba(0,0,0,0.3);
-      border-top-color: #000;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }
-
+    .output-text { font-size: 15px; color: var(--text); line-height: 1.75; white-space: pre-wrap; font-family: 'Inter', sans-serif; }
+    .spinner { width: 18px; height: 18px; border: 2px solid rgba(0,0,0,0.3); border-top-color: #000; border-radius: 50%; animation: spin 0.7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-
     .panel { display: none; }
     .panel.active { display: flex; flex-direction: column; gap: 20px; }
-
-    @media (max-width: 600px) {
-      nav { padding: 16px 20px; }
-      .nav-links { display: none; }
-      h1 { font-size: 28px; }
-      .form-card { padding: 20px; }
-    }
+    @media (max-width: 600px) { nav { padding: 16px 20px; } .nav-links { display: none; } h1 { font-size: 28px; } .form-card { padding: 20px; } }
   </style>
 </head>
 <body>
-
   <nav>
     <a class="nav-logo" href="/">
       <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
@@ -222,33 +73,18 @@
     </ul>
     <button class="btn-nav" onclick="window.location.href='/waitlist'">Claim Your Spot</button>
   </nav>
-
   <div class="page">
-
     <div class="badge">
       <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" fill="#39FF14" opacity="0.3"/><circle cx="5" cy="5" r="2.5" fill="#39FF14"/></svg>
       AI Powered
     </div>
-
     <h1>Prompt &amp; Lyric<br><em>Generator</em></h1>
     <p class="sub">Generate ready-to-use AI music prompts and full song lyrics in seconds.</p>
-
-    <!-- TABS -->
     <div class="tabs">
       <button class="tab active" onclick="switchTab('prompt')">🎛️ Music Prompt Generator</button>
       <button class="tab" onclick="switchTab('lyrics')">🎤 Lyric Generator</button>
     </div>
-
-    <div class="form-card" style="position:relative;">
-
-      <!-- LOCK OVERLAY -->
-      <div id="lock-overlay" style="display:none;position:absolute;inset:0;background:rgba(17,17,17,0.92);border-radius:16px;z-index:10;flex-direction:column;align-items:center;justify-content:center;gap:20px;backdrop-filter:blur(4px);padding:32px;text-align:center;">
-        <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><rect x="10" y="18" width="20" height="16" rx="4" stroke="#39FF14" stroke-width="1.5"/><path d="M14 18v-5a6 6 0 0 1 12 0v5" stroke="#39FF14" stroke-width="1.5" stroke-linecap="round"/></svg>
-        <div><div style="font-size:18px;font-weight:800;color:#f0f0f0;margin-bottom:8px;">Join the Waitlist to Access</div><div style="font-size:14px;color:#888;">The generator unlocks when you claim your spot.</div></div>
-        <button onclick="window.location.href='/waitlist'" style="background:#39FF14;color:#000;border:none;border-radius:8px;padding:14px 32px;font-size:15px;font-weight:700;cursor:pointer;">Claim Your Spot</button>
-      </div>
-
-      <!-- PROMPT PANEL -->
+    <div class="form-card">
       <div class="panel active" id="panel-prompt">
         <div class="field">
           <label>What kind of song would you like?</label>
@@ -262,12 +98,8 @@
           <label>Mood &amp; energy</label>
           <input type="text" id="p-mood" placeholder="e.g. Dark & cinematic, euphoric, aggressive, smooth..." />
         </div>
-        <button class="btn-generate" id="btn-prompt" onclick="generate('prompt')">
-          Generate Music Prompt
-        </button>
+        <button class="btn-generate" id="btn-prompt" onclick="generate('prompt')">Generate Music Prompt</button>
       </div>
-
-      <!-- LYRICS PANEL -->
       <div class="panel" id="panel-lyrics">
         <div class="field">
           <label>What should your song be about?</label>
@@ -285,14 +117,9 @@
           <label>Mood (optional)</label>
           <input type="text" id="l-mood" placeholder="e.g. Emotional, hype, melancholic..." />
         </div>
-        <button class="btn-generate" id="btn-lyrics" onclick="generate('lyrics')">
-          Generate Full Lyrics
-        </button>
+        <button class="btn-generate" id="btn-lyrics" onclick="generate('lyrics')">Generate Full Lyrics</button>
       </div>
-
     </div>
-
-    <!-- OUTPUT -->
     <div class="output-card" id="output-card">
       <div class="output-header">
         <span class="output-label" id="output-label">Generated Prompt</span>
@@ -300,16 +127,9 @@
       </div>
       <div class="output-text" id="output-text"></div>
     </div>
-
   </div>
-
   <script>
-    if (new URLSearchParams(window.location.search).get('access') !== 'neonartist2026') {
-      document.getElementById('lock-overlay').style.display = 'flex';
-    }
-
     let activeTab = 'prompt';
-
     function switchTab(tab) {
       activeTab = tab;
       document.querySelectorAll('.tab').forEach((t, i) => {
@@ -319,47 +139,35 @@
       document.getElementById('panel-lyrics').classList.toggle('active', tab === 'lyrics');
       document.getElementById('output-card').classList.remove('visible');
     }
-
     async function generate(type) {
       const btn = document.getElementById(type === 'prompt' ? 'btn-prompt' : 'btn-lyrics');
       const outputCard = document.getElementById('output-card');
       const outputText = document.getElementById('output-text');
       const outputLabel = document.getElementById('output-label');
-
       let payload = { type };
-
       if (type === 'prompt') {
         payload.genre = document.getElementById('p-genre').value.trim();
         payload.artist = document.getElementById('p-artist').value.trim();
         payload.mood = document.getElementById('p-mood').value.trim();
-        if (!payload.genre) {
-          document.getElementById('p-genre').focus();
-          return;
-        }
+        if (!payload.genre) { document.getElementById('p-genre').focus(); return; }
+        payload.topic = '';
       } else {
         payload.topic = document.getElementById('l-topic').value.trim();
         payload.genre = document.getElementById('l-genre').value.trim();
         payload.artist = document.getElementById('l-artist').value.trim();
         payload.mood = document.getElementById('l-mood').value.trim();
-        if (!payload.topic) {
-          document.getElementById('l-topic').focus();
-          return;
-        }
+        if (!payload.topic) { document.getElementById('l-topic').focus(); return; }
       }
-
       btn.disabled = true;
       btn.innerHTML = '<div class="spinner"></div> Generating...';
       outputCard.classList.remove('visible');
-
       try {
-        const res = await fetch('/api/generate', {
+        const res = await fetch('https://neonartist.neonartistai.workers.dev/api/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
-
         const data = await res.json();
-
         if (data.result) {
           outputLabel.textContent = type === 'prompt' ? 'Generated Music Prompt' : 'Generated Lyrics';
           outputText.textContent = data.result;
@@ -371,11 +179,9 @@
       } catch (e) {
         alert('Error connecting to generator. Try again.');
       }
-
       btn.disabled = false;
       btn.innerHTML = type === 'prompt' ? 'Generate Music Prompt' : 'Generate Full Lyrics';
     }
-
     function copyOutput() {
       const text = document.getElementById('output-text').textContent;
       navigator.clipboard.writeText(text).then(() => {
@@ -385,6 +191,5 @@
       });
     }
   </script>
-
 </body>
 </html>

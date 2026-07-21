@@ -84,7 +84,12 @@ const GENERATOR_HTML = `<!DOCTYPE html>
       <button class="tab active" onclick="switchTab('prompt')">🎛️ Music Prompt Generator</button>
       <button class="tab" onclick="switchTab('lyrics')">🎤 Lyric Generator</button>
     </div>
-    <div class="form-card">
+    <div class="form-card" style="position:relative;">
+      <div id="lock-overlay" style="display:none;position:absolute;inset:0;background:rgba(17,17,17,0.92);border-radius:16px;z-index:10;flex-direction:column;align-items:center;justify-content:center;gap:20px;backdrop-filter:blur(4px);padding:32px;text-align:center;">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><rect x="10" y="18" width="20" height="16" rx="4" stroke="#39FF14" stroke-width="1.5"/><path d="M14 18v-5a6 6 0 0 1 12 0v5" stroke="#39FF14" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <div><div style="font-size:18px;font-weight:800;color:#f0f0f0;margin-bottom:8px;">Join the Waitlist to Access</div><div style="font-size:14px;color:#888;">The generator unlocks when you claim your spot.</div></div>
+        <button onclick="window.location.href='/waitlist'" style="background:#39FF14;color:#000;border:none;border-radius:8px;padding:14px 32px;font-size:15px;font-weight:700;cursor:pointer;">Claim Your Spot</button>
+      </div>
       <div class="panel active" id="panel-prompt">
         <div class="field">
           <label>What kind of song would you like?</label>
@@ -150,6 +155,7 @@ const GENERATOR_HTML = `<!DOCTYPE html>
         payload.artist = document.getElementById('p-artist').value.trim();
         payload.mood = document.getElementById('p-mood').value.trim();
         if (!payload.genre) { document.getElementById('p-genre').focus(); return; }
+        payload.topic = '';
       } else {
         payload.topic = document.getElementById('l-topic').value.trim();
         payload.genre = document.getElementById('l-genre').value.trim();
@@ -161,7 +167,7 @@ const GENERATOR_HTML = `<!DOCTYPE html>
       btn.innerHTML = '<div class="spinner"></div> Generating...';
       outputCard.classList.remove('visible');
       try {
-        const res = await fetch('/api/generate', {
+        const res = await fetch('https://neonartist.neonartistai.workers.dev/api/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
@@ -199,7 +205,9 @@ export default {
 
     // Serve generator page directly from worker (assets deployment doesn't update HTML)
     if (url.pathname === '/generator' || url.pathname === '/generator.html') {
-      return new Response(GENERATOR_HTML, {
+      const unlocked = url.searchParams.get('access') === 'neonartist2026';
+      const html = unlocked ? GENERATOR_HTML : GENERATOR_HTML.replace('id="lock-overlay"', 'id="lock-overlay" style="display:flex!important"');
+      return new Response(html, {
         headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' },
       });
     }
@@ -232,7 +240,7 @@ Generate a detailed, ready-to-use music prompt based on:
 - Sounds like: ${artist || 'no specific artist'}
 - Mood/energy: ${mood || 'not specified'}
 
-Return ONLY the prompt text — no explanations, no labels, no intro. Just the prompt itself, formatted for direct use in Suno or Udio. Keep it under 200 words. Be specific about instrumentation, tempo, vocals, atmosphere, and production style.`;
+Return ONLY the prompt text — no explanations, no labels, no intro. Just the prompt itself, formatted for direct use in Suno or Udio. Keep it strictly under 1000 characters. Be specific about instrumentation, tempo, vocals, atmosphere, and production style. CRITICAL RULE: NEVER mention any artist or band names anywhere in the output — not even as inspiration or reference. Instead always translate the artist's name into a description of their sound (e.g. instead of "Kygo-inspired" write "tropical house with euphoric piano melodies and organic percussion drops"). Scan your output before returning and remove any artist names.`;
       } else if (type === 'lyrics') {
         prompt = `You are a professional songwriter and lyricist.
 

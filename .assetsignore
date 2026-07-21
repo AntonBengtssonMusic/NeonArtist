@@ -1,0 +1,12 @@
+node_modules/
+neon-bg/
+neon-box/
+motionmade/
+ako-gambles/
+netlify/
+.git/
+.wrangler/
+.claude/
+.dev.vars
+*.log
+generator-local.html

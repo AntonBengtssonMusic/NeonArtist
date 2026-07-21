@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeonArtist — Build Your AI Artist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #111111;
+      --surface:    #181818;
+      --surface2:   #1f1f1f;
+      --border:     #2a2a2a;
+      --text:       #f0f0f0;
+      --muted:      #888;
+      --faint:      #444;
+      --green:      #39FF14;
+      --green-dim:  rgba(57,255,20,0.10);
+      --green-glow: rgba(57,255,20,0.28);
+      --green-glow2:rgba(57,255,20,0.08);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    .fade-up {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.55s cubic-bezier(0.22,1,0.36,1), transform 0.55s cubic-bezier(0.22,1,0.36,1);
+    }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+    .fade-up-delay-1 { transition-delay: 0.08s; }
+    .fade-up-delay-2 { transition-delay: 0.16s; }
+    .fade-up-delay-3 { transition-delay: 0.24s; }
+    .fade-up-delay-4 { transition-delay: 0.32s; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 36px; height: 62px;
+      background: rgba(17,17,17,0.6);
+      backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid transparent;
+      transition: background 0.35s, border-color 0.35s, box-shadow 0.35s;
+    }
+    nav.scrolled {
+      background: rgba(17,17,17,0.96);
+      border-bottom-color: var(--border);
+      box-shadow: 0 1px 32px rgba(0,0,0,0.5);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 15px; font-weight: 700; color: var(--text);
+      text-decoration: none; letter-spacing: -0.3px;
+      font-family: 'Orbitron', sans-serif;
+    }
+    .nav-links {
+      display: flex; align-items: center; gap: 32px; list-style: none;
+      position: absolute; left: 50%; transform: translateX(-50%);
+    }
+    .nav-links a {
+      font-size: 13px; font-weight: 400; color: var(--muted);
+      text-decoration: none; transition: color 0.15s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    @keyframes btnGlow {
+      0%, 100% { box-shadow: 0 0 8px rgba(57,255,20,0.4), 0 0 18px rgba(57,255,20,0.2); border-color: rgba(57,255,20,0.7); }
+      50%       { box-shadow: 0 0 18px rgba(57,255,20,0.7), 0 0 36px rgba(57,255,20,0.35); border-color: rgba(57,255,20,1); }
+    }
+    .btn-nav {
+      font-size: 13px; font-weight: 600; padding: 8px 18px; border-radius: 8px;
+      background: var(--green); color: #000; border: 1px solid var(--green);
+      cursor: pointer; transition: opacity 0.15s, transform 0.15s;
+      animation: btnGlow 2.4s ease-in-out infinite; letter-spacing: -0.1px;
+      text-decoration: none; display: inline-block;
+    }
+    .btn-nav:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; text-align: center;
+      padding: 130px 24px 80px; position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; top: 20%; left: 50%;
+      transform: translate(-50%, -50%); width: 700px; height: 400px;
+      background: radial-gradient(ellipse, rgba(57,255,20,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.6px; color: var(--green);
+      border: 1px solid rgba(57,255,20,0.28); border-radius: 100px;
+      padding: 6px 16px; margin-bottom: 40px; text-transform: uppercase;
+      background: rgba(57,255,20,0.05); backdrop-filter: blur(8px);
+    }
+    .badge-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+      box-shadow: 0 0 6px var(--green); animation: liveDot 2s ease-in-out infinite; flex-shrink: 0;
+    }
+    @keyframes liveDot {
+      0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--green); }
+      50%       { opacity: 0.25; box-shadow: 0 0 2px var(--green); }
+    }
+
+    .hero h1 {
+      font-size: clamp(44px, 7.5vw, 86px); font-weight: 900; line-height: 1.02;
+      letter-spacing: -3px; max-width: 840px; margin-bottom: 24px;
+    }
+    .hero h1 em { font-style: normal; color: var(--green); }
+    .hero > p {
+      font-size: clamp(15px, 2vw, 18px); color: var(--muted); font-weight: 400;
+      line-height: 1.65; max-width: 480px; margin-bottom: 44px;
+    }
+    .hero-ctas { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: center; }
+
+    .btn-primary {
+      font-size: 15px; font-weight: 700; padding: 15px 30px; border-radius: 10px;
+      background: var(--green); color: #000; border: 1px solid var(--green);
+      cursor: pointer; transition: opacity 0.15s, transform 0.15s;
+      display: inline-flex; align-items: center; gap: 8px; letter-spacing: -0.1px;
+      animation: btnGlow 2.4s ease-in-out infinite; text-decoration: none;
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
+
+    .btn-secondary {
+      font-size: 15px; font-weight: 500; padding: 15px 30px; border-radius: 10px;
+      background: transparent; color: var(--text); border: 1px solid var(--border);
+      cursor: pointer; transition: border-color 0.2s, background 0.2s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-secondary:hover { border-color: var(--faint); background: rgba(255,255,255,0.03); }
+
+    .hero-note { margin-top: 20px; font-size: 12px; color: var(--muted); letter-spacing: 0.2px; }
+
+    .waveform-wrap { margin-top: 64px; width: 100%; max-width: 600px; position: relative; }
+    #waveCanvas { display: block; width: 100%; height: 72px; }
+
+    /* SECTIONS */
+    section { padding: 100px 24px; }
+    .section-inner { max-width: 1060px; margin: 0 auto; }
+    .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--green); margin-bottom: 14px; }
+    .section-title { font-size: clamp(30px, 4vw, 48px); font-weight: 800; letter-spacing: -1.8px; line-height: 1.07; margin-bottom: 16px; }
+    .section-sub { font-size: 16px; color: var(--muted); line-height: 1.7; max-width: 540px; }
+
+    /* SOCIAL PROOF STRIP */
+    .proof-strip {
+      background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      padding: 20px 24px;
+    }
+    .proof-inner {
+      max-width: 1060px; margin: 0 auto; display: flex;
+      align-items: center; justify-content: center; gap: 40px; flex-wrap: wrap;
+    }
+    .proof-item { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+    .proof-item svg { color: var(--green); flex-shrink: 0; }
+
+    /* FOUNDER */
+    .founder-section { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .founder-card {
+      background: var(--surface); border: 1px solid rgba(57,255,20,0.2); border-radius: 20px;
+      padding: 52px 48px; max-width: 780px; margin: 0 auto; text-align: center;
+      position: relative; box-shadow: 0 0 60px rgba(57,255,20,0.05);
+    }
+    .founder-heading { font-size: clamp(22px, 3vw, 30px); font-weight: 800; letter-spacing: -0.8px; margin-bottom: 28px; }
+    .founder-heading span { color: var(--green); }
+    .founder-card p { font-size: 16px; line-height: 1.8; color: #bbb; margin-bottom: 14px; }
+    .founder-card p:last-of-type { margin-bottom: 0; }
+    .founder-sig {
+      margin-top: 32px; font-size: 13px; color: var(--muted);
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      padding-top: 24px; border-top: 1px solid var(--border);
+    }
+    .founder-sig strong { color: var(--text); }
+    .founder-avatar {
+      width: 36px; height: 36px; border-radius: 50%; background: var(--green-dim);
+      border: 1px solid rgba(57,255,20,0.25); display: flex; align-items: center; justify-content: center;
+      color: var(--green); flex-shrink: 0;
+    }
+
+    /* OPPORTUNITY */
+    .opportunity-section { background: var(--surface); }
+    .opp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-top: 52px; }
+    .opp-card {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 14px;
+      padding: 30px 28px; text-align: center; transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+    }
+    .opp-card:hover { border-color: rgba(57,255,20,0.3); box-shadow: 0 0 28px rgba(57,255,20,0.07); transform: translateY(-3px); }
+    .opp-number { font-size: 34px; font-weight: 800; color: var(--green); letter-spacing: -1.5px; margin-bottom: 8px; text-shadow: 0 0 20px rgba(57,255,20,0.3); }
+    .opp-label { font-size: 12px; color: var(--muted); line-height: 1.6; }
+    .opp-message {
+      margin-top: 44px; padding: 26px 36px; border: 1px solid rgba(57,255,20,0.2); border-radius: 14px;
+      background: var(--green-dim); font-size: 15px; color: var(--text); line-height: 1.65; text-align: center;
+    }
+    .opp-message strong { color: var(--green); }
+
+    /* SYSTEM STEPS */
+    .steps-grid {
+      display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; margin-top: 52px;
+      border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+    }
+    .step-card {
+      background: var(--surface); padding: 32px 24px; border-right: 1px solid var(--border);
+      transition: background 0.2s; position: relative;
+    }
+    .step-card:last-child { border-right: none; }
+    .step-card::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+      background: var(--green); opacity: 0; transition: opacity 0.2s;
+    }
+    .step-card:hover { background: #1c1c1c; }
+    .step-card:hover::after { opacity: 0.5; }
+    .step-arrow { position: absolute; right: -8px; top: 50%; transform: translateY(-50%); color: var(--faint); font-size: 12px; z-index: 1; }
+    .step-card:last-child .step-arrow { display: none; }
+    .step-num { font-size: 10px; font-weight: 700; letter-spacing: 0.8px; color: var(--green); margin-bottom: 16px; }
+    .step-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.3px; }
+    .step-card p { font-size: 12px; color: var(--muted); line-height: 1.65; }
+
+    /* WHO IS THIS FOR */
+    .for-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 48px; }
+    .for-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 28px; display: flex; gap: 16px; align-items: flex-start;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .for-card:hover { border-color: rgba(57,255,20,0.25); transform: translateY(-2px); }
+    .for-icon {
+      width: 38px; height: 38px; border-radius: 9px; background: var(--green-dim);
+      border: 1px solid rgba(57,255,20,0.2); display: flex; align-items: center; justify-content: center;
+      color: var(--green); flex-shrink: 0; font-size: 18px;
+    }
+    .for-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.2px; }
+    .for-card p { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+    /* MODULES */
+    .modules-list { display: flex; flex-direction: column; gap: 8px; margin-top: 44px; }
+    .module-row {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 0; overflow: hidden; transition: border-color 0.2s;
+    }
+    .module-row:hover { border-color: rgba(57,255,20,0.25); }
+    .module-row.highlight { border-color: rgba(57,255,20,0.3); background: linear-gradient(135deg, rgba(57,255,20,0.04) 0%, var(--surface) 60%); }
+    .module-header {
+      display: flex; align-items: center; gap: 16px; padding: 20px 24px; cursor: pointer;
+    }
+    .mod-num {
+      min-width: 40px; height: 40px; border-radius: 9px; background: var(--surface2);
+      border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: var(--muted); flex-shrink: 0;
+    }
+    .module-row.highlight .mod-num { background: var(--green-dim); border-color: rgba(57,255,20,0.3); color: var(--green); }
+    .mod-title { font-size: 15px; font-weight: 700; letter-spacing: -0.2px; flex: 1; }
+    .mod-badge {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
+      color: var(--green); background: var(--green-dim); border: 1px solid rgba(57,255,20,0.28);
+      border-radius: 5px; padding: 3px 9px; flex-shrink: 0;
+    }
+    .mod-chevron { color: var(--faint); font-size: 14px; transition: transform 0.2s; flex-shrink: 0; }
+    .module-row.open .mod-chevron { transform: rotate(180deg); }
+    .module-body {
+      display: none; padding: 0 24px 22px; padding-left: 80px;
+    }
+    .module-row.open .module-body { display: block; }
+    .module-body p { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 14px; }
+    .mod-lessons { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .mod-lessons li {
+      font-size: 12px; color: #999; padding: 5px 0 5px 16px; position: relative; line-height: 1.5;
+    }
+    .mod-lessons li::before {
+      content: '▸'; position: absolute; left: 0; color: var(--green); font-size: 10px; top: 6px;
+    }
+
+    /* CASE STUDIES */
+    .case-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 52px; }
+    .case-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 38px;
+      transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+    }
+    .case-card:hover { border-color: rgba(57,255,20,0.25); box-shadow: 0 8px 40px rgba(57,255,20,0.06); transform: translateY(-3px); }
+    .case-tag { font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; }
+    .case-card h3 { font-size: 22px; font-weight: 800; letter-spacing: -0.6px; margin-bottom: 24px; line-height: 1.2; }
+    .case-stats { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+    .case-stat { display: flex; flex-direction: column; gap: 4px; }
+    .case-stat .number { font-size: 36px; font-weight: 800; color: var(--green); letter-spacing: -1.5px; text-shadow: 0 0 20px rgba(57,255,20,0.25); line-height: 1; }
+    .case-stat .label { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .case-divider { height: 1px; background: var(--border); margin: 20px 0; }
+    .case-note { font-size: 12px; color: var(--muted); line-height: 1.7; }
+
+    /* WHAT YOU'LL BUILD */
+    .build-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin-top: 52px; }
+    .build-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 30px;
+      transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+    }
+    .build-card:hover { border-color: rgba(57,255,20,0.25); box-shadow: 0 6px 32px rgba(57,255,20,0.06); transform: translateY(-3px); }
+    .build-icon {
+      width: 40px; height: 40px; border-radius: 10px; background: var(--green-dim);
+      border: 1px solid rgba(57,255,20,0.2); display: flex; align-items: center; justify-content: center;
+      margin-bottom: 18px; color: var(--green);
+    }
+    .build-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 12px; letter-spacing: -0.3px; }
+    .build-card ul { list-style: none; padding: 0; }
+    .build-card ul li {
+      font-size: 13px; color: var(--muted); padding: 5px 0; display: flex; gap: 9px; align-items: flex-start;
+    }
+    .build-card ul li::before {
+      content: ''; display: block; min-width: 5px; height: 5px; border-radius: 50%;
+      background: var(--green); margin-top: 5px;
+    }
+
+    /* BONUS BOX */
+    .bonus-box {
+      margin-top: 44px; border: 1px solid rgba(57,255,20,0.3); border-radius: 16px;
+      background: linear-gradient(135deg, rgba(57,255,20,0.06) 0%, rgba(57,255,20,0.02) 100%);
+      padding: 36px 40px;
+    }
+    .bonus-tag {
+      display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
+      text-transform: uppercase; color: var(--green); background: var(--green-dim);
+      border: 1px solid rgba(57,255,20,0.28); border-radius: 5px; padding: 4px 10px; margin-bottom: 16px;
+    }
+    .bonus-box h3 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 10px; }
+    .bonus-box p { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 20px; }
+    .bonus-items { display: flex; flex-wrap: wrap; gap: 10px; }
+    .bonus-item {
+      display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text);
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px;
+    }
+    .bonus-item::before { content: '✓'; color: var(--green); font-weight: 700; }
+
+    /* PRICING */
+    .pricing-section { background: var(--surface); }
+    .pricing-card {
+      max-width: 520px; margin: 52px auto 0; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 22px; padding: 44px; position: relative;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .pricing-card:hover { border-color: rgba(57,255,20,0.3); box-shadow: 0 0 60px rgba(57,255,20,0.08); }
+    .pricing-label {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
+      color: var(--green); background: var(--green-dim); border: 1px solid rgba(57,255,20,0.25);
+      border-radius: 6px; padding: 5px 12px; margin-bottom: 30px;
+    }
+    .price-row { display: flex; align-items: baseline; gap: 14px; margin-bottom: 6px; }
+    .price-main { font-size: 60px; font-weight: 900; letter-spacing: -3px; color: var(--text); }
+    .price-was { font-size: 22px; color: var(--faint); text-decoration: line-through; font-weight: 400; }
+    .price-note { font-size: 13px; color: var(--muted); margin-bottom: 30px; }
+    .pricing-name { font-size: 18px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.4px; }
+    .pricing-tagline { font-size: 13px; color: var(--muted); margin-bottom: 30px; line-height: 1.6; }
+    .features-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 34px; }
+    .feature-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text); }
+    .feature-item svg { flex-shrink: 0; }
+    .btn-full {
+      width: 100%; padding: 17px; background: var(--green); color: #000;
+      font-size: 16px; font-weight: 800; border: 1px solid var(--green); border-radius: 10px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+      letter-spacing: -0.1px; animation: btnGlow 2.4s ease-in-out infinite;
+      transition: opacity 0.15s, transform 0.15s; text-decoration: none; font-family: inherit;
+    }
+    .btn-full:hover { opacity: 0.9; transform: translateY(-1px); }
+    .pricing-footer { text-align: center; margin-top: 16px; font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+    /* GUARANTEE */
+    .guarantee-strip {
+      margin-top: 28px; border: 1px solid rgba(57,255,20,0.2); border-radius: 12px;
+      background: rgba(57,255,20,0.04); padding: 20px 24px;
+      display: flex; align-items: flex-start; gap: 14px;
+    }
+    .guarantee-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+    .guarantee-strip h4 { font-size: 14px; font-weight: 700; margin-bottom: 5px; }
+    .guarantee-strip p { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+    /* FAQ */
+    .faq-list { display: flex; flex-direction: column; gap: 8px; margin-top: 44px; }
+    .faq-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .faq-q {
+      padding: 20px 24px; font-size: 15px; font-weight: 600; cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center; gap: 16px;
+      transition: background 0.15s;
+    }
+    .faq-q:hover { background: #1c1c1c; }
+    .faq-chevron { color: var(--muted); font-size: 14px; transition: transform 0.2s; flex-shrink: 0; }
+    .faq-item.open .faq-chevron { transform: rotate(180deg); color: var(--green); }
+    .faq-a { display: none; padding: 0 24px 20px; font-size: 14px; color: var(--muted); line-height: 1.7; }
+    .faq-item.open .faq-a { display: block; }
+
+    /* FINAL CTA */
+    .final-cta { text-align: center; padding: 110px 24px; position: relative; overflow: hidden; }
+    .final-cta-card {
+      max-width: 640px; margin: 0 auto; background: var(--surface);
+      border: 1px solid rgba(57,255,20,0.2); border-radius: 24px; padding: 56px 48px;
+      position: relative; box-shadow: 0 0 80px rgba(57,255,20,0.1), 0 0 160px rgba(57,255,20,0.05);
+    }
+    .final-cta-card::before {
+      content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 120%; height: 120%;
+      background: radial-gradient(ellipse, rgba(57,255,20,0.12) 0%, transparent 65%);
+      pointer-events: none; z-index: -1; border-radius: 50%;
+    }
+    .final-cta h2 { font-size: clamp(28px, 4vw, 42px); font-weight: 900; letter-spacing: -1.5px; margin-bottom: 14px; }
+    .final-cta-sub { font-size: 16px; color: var(--muted); margin-bottom: 36px; line-height: 1.6; }
+    .final-cta-note { margin-top: 16px; font-size: 13px; color: var(--green); font-weight: 500; }
+    .final-cta-note2 { margin-top: 6px; font-size: 12px; color: var(--muted); }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border); padding: 28px 36px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    }
+    footer p { font-size: 12px; color: var(--faint); }
+
+    /* HERO ENTRANCE */
+    .hero .badge   { animation: fadeUp 0.55s 0.1s cubic-bezier(0.22,1,0.36,1) both; }
+    .hero h1       { animation: fadeUp 0.55s 0.2s cubic-bezier(0.22,1,0.36,1) both; }
+    .hero > p      { animation: fadeUp 0.55s 0.3s cubic-bezier(0.22,1,0.36,1) both; }
+    .hero-ctas     { animation: fadeUp 0.55s 0.38s cubic-bezier(0.22,1,0.36,1) both; }
+    .hero-note     { animation: fadeUp 0.55s 0.44s cubic-bezier(0.22,1,0.36,1) both; }
+    .waveform-wrap { animation: fadeUp 0.55s 0.54s cubic-bezier(0.22,1,0.36,1) both; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .steps-grid { grid-template-columns: repeat(3, 1fr); }
+      .step-card:nth-child(3) { border-right: none; }
+    }
+    @media (max-width: 768px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      section { padding: 72px 20px; }
+      .founder-card { padding: 32px; }
+      .case-grid { grid-template-columns: 1fr; }
+      .features-list { grid-template-columns: 1fr; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .step-card { border-right: none !important; border-bottom: 1px solid var(--border); }
+      .step-card:last-child { border-bottom: none; }
+      .step-arrow { display: none; }
+      footer { flex-direction: column; align-items: flex-start; }
+      .pricing-card { padding: 32px 24px; }
+      .hero h1 { letter-spacing: -2px; }
+      .module-body { padding-left: 24px; }
+      .proof-inner { gap: 20px; }
+      .bonus-box { padding: 28px 24px; }
+    }
+    @media (max-width: 480px) {
+      .for-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo">
+    <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:28px;height:28px;">
+      <rect width="28" height="28" rx="7" fill="#39FF14" fill-opacity="0.10"/>
+      <rect width="28" height="28" rx="7" stroke="#39FF14" stroke-opacity="0.35" stroke-width="1"/>
+      <path d="M10 19V11l10-2v8" stroke="#39FF14" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="8.5" cy="19.5" r="2" fill="#39FF14"/>
+      <circle cx="18.5" cy="17.5" r="2" fill="#39FF14"/>
+    </svg>
+    <span style="background:linear-gradient(90deg,#f0f0f0 0%,#f0f0f0 50%,#39FF14 50%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">NeonArtist</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#inside">What's Inside</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="/generator" style="color:var(--green);">Prompt Generator</a></li>
+  </ul>
+  <a class="btn-nav" href="#pricing">Get Access</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="badge">
+    <span class="badge-dot"></span>
+    Now Live · Founding Member Price
+  </div>
+
+  <h1>Build Your <em>AI Artist.</em><br>Turn Ideas Into Income.</h1>
+
+  <p>Create songs, build a faceless brand, go viral on TikTok, and release music on Spotify — without showing your face or knowing music theory.</p>
+
+  <div class="hero-ctas">
+    <a class="btn-primary" href="#pricing">
+      Get Instant Access
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <button class="btn-secondary" onclick="document.getElementById('inside').scrollIntoView({behavior:'smooth'})">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 5l3 2-3 2V5z" fill="currentColor"/></svg>
+      See What's Inside
+    </button>
+  </div>
+  <p class="hero-note">One-time payment · Instant access · Lifetime updates</p>
+
+  <div class="waveform-wrap" aria-hidden="true">
+    <canvas id="waveCanvas"></canvas>
+  </div>
+</section>
+
+<!-- SOCIAL PROOF STRIP -->
+<div class="proof-strip">
+  <div class="proof-inner">
+    <div class="proof-item">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 7l2.5 2.5L10 4" stroke="#39FF14" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      No music experience needed
+    </div>
+    <div class="proof-item">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 7l2.5 2.5L10 4" stroke="#39FF14" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      No face required
+    </div>
+    <div class="proof-item">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 7l2.5 2.5L10 4" stroke="#39FF14" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      7+ video lessons + tools
+    </div>
+    <div class="proof-item">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 7l2.5 2.5L10 4" stroke="#39FF14" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      One-time payment
+    </div>
+    <div class="proof-item">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 7l2.5 2.5L10 4" stroke="#39FF14" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Lifetime updates
+    </div>
+  </div>
+</div>
+
+<!-- FOUNDER -->
+<section class="founder-section">
+  <div class="section-inner">
+    <div class="founder-card fade-up">
+      <h3 class="founder-heading">"Hi, I'm Anton — founder of <span>NeonArtist</span>."</h3>
+      <p>I built this system because I saw a massive opportunity most people are completely missing. AI music is exploding. Faceless creators are already generating millions of streams and real income — without a studio, without showing their face, and without any music experience.</p>
+      <p>NeonArtist gives you the exact step-by-step system to do the same. I've been an independent and signed artist since 2019, and I run AI music YouTube channels. This is the course I wish existed when I started.</p>
+      <div class="founder-sig">
+        <div class="founder-avatar" style="background:none;border:2px solid rgba(57,255,20,0.3);overflow:hidden;padding:0;">
+          <img src="https://i.gyazo.com/471f031c99105967bff29faea915cd63.png" alt="Anton" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />
+        </div>
+        <span><strong>Anton</strong> — Founder, NeonArtist · Independent &amp; Signed Artist since 2019 · Runs AI music YouTube channels</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OPPORTUNITY -->
+<section class="opportunity-section">
+  <div class="section-inner">
+    <p class="eyebrow fade-up">The Opportunity</p>
+    <h2 class="section-title fade-up fade-up-delay-1">AI Music Is <span style="color:var(--green)">Exploding</span></h2>
+    <p class="section-sub fade-up fade-up-delay-2">AI artists are already generating millions of streams. Faceless creators are growing faster than ever. Right now the barrier is near zero — in 6–12 months, it won't be.</p>
+    <div class="opp-grid">
+      <div class="opp-card fade-up fade-up-delay-1"><div class="opp-number">$7.8B</div><div class="opp-label">AI music market<br>projected by 2025</div></div>
+      <div class="opp-card fade-up fade-up-delay-2"><div class="opp-number">100M+</div><div class="opp-label">AI-generated tracks<br>streamed every month</div></div>
+      <div class="opp-card fade-up fade-up-delay-3"><div class="opp-number">1,200%</div><div class="opp-label">AI music uploads on<br>streaming platforms since 2022</div></div>
+      <div class="opp-card fade-up fade-up-delay-4"><div class="opp-number">&lt;$50</div><div class="opp-label">Monthly cost to start<br>an AI music project</div></div>
+    </div>
+    <div class="opp-message fade-up"><strong>The barrier is gone. The opportunity is here.</strong><br>Most people are still not paying attention. That's your advantage.</div>
+  </div>
+</section>
+
+<!-- WHO IS THIS FOR -->
+<section>
+  <div class="section-inner">
+    <p class="eyebrow fade-up">Who This Is For</p>
+    <h2 class="section-title fade-up fade-up-delay-1">You don't need <span style="color:var(--green)">experience.</span></h2>
+    <p class="section-sub fade-up fade-up-delay-2">NeonArtist is built for people who are ready to move — whatever their starting point.</p>
+
+    <div class="for-grid">
+      <div class="for-card fade-up fade-up-delay-1">
+        <div class="for-icon">🎯</div>
+        <div>
+          <h3>Complete Beginners</h3>
+          <p>You've never made music before. You don't know what Suno or DistroKid is. This course starts from zero and walks you through everything.</p>
+        </div>
+      </div>
+      <div class="for-card fade-up fade-up-delay-2">
+        <div class="for-icon">🎬</div>
+        <div>
+          <h3>Content Creators</h3>
+          <p>You already post on TikTok or YouTube and want to add an AI music brand as another income stream without showing your face.</p>
+        </div>
+      </div>
+      <div class="for-card fade-up fade-up-delay-3">
+        <div class="for-icon">🎵</div>
+        <div>
+          <h3>Existing Artists</h3>
+          <p>You make music already but want to build a separate faceless AI project to scale — without burning out or spending more studio time.</p>
+        </div>
+      </div>
+      <div class="for-card fade-up fade-up-delay-4">
+        <div class="for-icon">💰</div>
+        <div>
+          <h3>Side Income Seekers</h3>
+          <p>You want a real business that grows passively — royalties, AdSense, licensing — while you sleep. This is the system to build it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SYSTEM -->
+<section style="background:var(--surface);">
+  <div class="section-inner">
+    <p class="eyebrow fade-up">The System</p>
+    <h2 class="section-title fade-up fade-up-delay-1">From idea to <span style="color:var(--green)">AI artist</span></h2>
+    <p class="section-sub fade-up fade-up-delay-2">One proven path. Six steps. Everything you need to go from zero to a live artist generating real income.</p>
+    <div class="steps-grid fade-up">
+      <div class="step-card"><div class="step-num">01</div><h3>Idea</h3><p>Find your concept, direction, and niche before you build anything.</p><span class="step-arrow">›</span></div>
+      <div class="step-card"><div class="step-num">02</div><h3>Artist</h3><p>Build your AI artist identity, name, logo, and brand from scratch.</p><span class="step-arrow">›</span></div>
+      <div class="step-card"><div class="step-num">03</div><h3>Songs</h3><p>Create high-quality tracks that connect with real listeners.</p><span class="step-arrow">›</span></div>
+      <div class="step-card"><div class="step-num">04</div><h3>Content</h3><p>Turn your songs into viral content that drives followers.</p><span class="step-arrow">›</span></div>
+      <div class="step-card"><div class="step-num">05</div><h3>Audience</h3><p>Grow your fans and build a community that lasts.</p><span class="step-arrow">›</span></div>
+      <div class="step-card"><div class="step-num">06</div><h3>Income</h3><p>Monetize across streams, sync, licensing, and sponsorships.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT'S INSIDE -->
+<section id="inside">
+  <div class="section-inner">
+    <p class="eyebrow fade-up">What's Inside</p>
+    <h2 class="section-title fade-up fade-up-delay-1">Every module. <span style="color:var(--green)">Every lesson.</span></h2>
+    <p class="section-sub fade-up fade-up-delay-2">No fluff. No theory. Every lesson ends with something built. Here's exactly what you get access to the moment you join.</p>
+
+    <div class="modules-list fade-up">
+
+      <div class="module-row highlight open">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="mod-num">00</div>
+          <div class="mod-title">Welcome to NeonArtist</div>
+          <span class="mod-badge">Free Preview</span>
+          <span class="mod-chevron">▾</span>
+        </div>
+        <div class="module-body">
+          <p>An honest look at what's possible with AI music right now — and how to use this system to get there. You'll understand exactly what to expect, what tools you'll need, and why now is the best time to start.</p>
+          <ul class="mod-lessons">
+            <li>What AI music actually is and why it matters in 2025</li>
+            <li>How faceless artists are generating real income today</li>
+            <li>How to get the most out of this course</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="module-row">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="mod-num">01</div>
+          <div class="mod-title">Build Your AI Artist</div>
+          <span class="mod-chevron">▾</span>
+        </div>
+        <div class="module-body">
+          <p>This is where your brand comes to life. You'll create a complete AI artist identity — name, visual aesthetic, logo, and brand colours — that feels real, stands out, and attracts the right audience.</p>
+          <ul class="mod-lessons">
+            <li>How to pick a niche and concept that actually works</li>
+            <li>Naming your artist — what makes a name memorable</li>
+            <li>Creating a logo and visual identity with AI tools</li>
+            <li>Setting your brand colours, mood, and tone</li>
+            <li>Building an aesthetic that connects with listeners</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="module-row">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="mod-num">02</div>
+          <div class="mod-title">Create Your First Song</div>
+          <span class="mod-chevron">▾</span>
+        </div>
+        <div class="module-body">
+          <p>A full Suno walkthrough from scratch. You'll learn how to write prompts that get consistent, high-quality results — not the generic stuff. By the end of this module you'll have your first real track.</p>
+          <ul class="mod-lessons">
+            <li>Suno setup and interface walkthrough</li>
+            <li>Writing prompts that actually produce good music</li>
+            <li>Style descriptors, mood tags, and structure prompts</li>
+            <li>How to get consistent sound across multiple tracks</li>
+            <li>Selecting, editing, and exporting your final song</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="module-row">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="mod-num">03</div>
+          <div class="mod-title">Build Your Artist Profiles</div>
+          <span class="mod-chevron">▾</span>
+        </div>
+        <div class="module-body">
+          <p>Set up and optimise your presence across every major platform — Spotify, YouTube, TikTok, and Instagram. Everything is designed from day one to look professional and grow.</p>
+          <ul class="mod-lessons">
+            <li>Spotify for Artists — setup, bio, and profile image</li>
+            <li>YouTube channel setup for an AI music brand</li>
+            <li>TikTok and Instagram profile optimisation</li>
+            <li>Linking all platforms into a unified brand presence</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="module-row">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="mod-num">04</div>
+          <div class="mod-title">Release on Spotify</div>
+          <span class="mod-chevron">▾</span>
+        </div>
+        <div class="module-body">
+          <p>The full release pipeline — from artwork to metadata to going live. You'll learn how to use DistroKid to distribute your music worldwide, including pre-save campaigns that build momentum before launch.</p>
+          <ul class="mod-lessons">
+            <li>DistroKid setup and release walkthrough</li>
+            <li>Creating cover art that gets clicks</li>
+            <li>Metadata, ISRC codes, and artist credits</li>
+            <li>Setting release dates and running a pre-save campaign</li>
+            <li>Getting your music on multiple stores at once</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="module-row">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="mod-num">05</div>
+          <div class="mod-title">Pitch to Playlists</div>
+          <span class="mod-chevron">▾</span>
+        </div>
+        <div class="module-body">
+          <p>Playlists are where streams happen. You'll learn how to submit to Spotify editorial, use SubmitHub to reach independent curators, and build relationships that get your music placed consistently.</p>
+          <ul class="mod-lessons">
+            <li>How Spotify editorial pitching works and what to write</li>
+            <li>SubmitHub — finding the right curators for your genre</li>
+            <li>Writing a pitch that actually gets accepted</li>
+            <li>Building a curator list and following up</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="module-row">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="mod-num">06</div>
+          <div class="mod-title">Create Viral Content</div>
+          <span class="mod-chevron">▾</span>
+        </div>
+        <div class="module-body">
+          <p>Turn your music into content that spreads. This module covers YouTube mixes, TikTok clips, AI-generated visuals, and the Human Strategy — how to give a faceless brand a human feel that audiences connect with.</p>
+          <ul class="mod-lessons">
+            <li>Building looping YouTube mixes that rack up views</li>
+            <li>Cutting TikTok clips that stop the scroll</li>
+            <li>Generating AI visuals and animations for your content</li>
+            <li>The Human Strategy — authenticity without showing your face</li>
+            <li>Repurposing one song into 5+ pieces of content</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="module-row">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="mod-num">07</div>
+          <div class="mod-title">Grow Your Audience</div>
+          <span class="mod-chevron">▾</span>
+        </div>
+        <div class="module-body">
+          <p>Real growth strategies for TikTok, YouTube Shorts, and Reels that actually work for music. You'll understand the algorithm, learn what to post, when to post, and how to keep momentum going.</p>
+          <ul class="mod-lessons">
+            <li>How the TikTok algorithm treats music content</li>
+            <li>Posting cadence and consistency frameworks</li>
+            <li>Shorts and Reels — adapting your content per platform</li>
+            <li>How to use trends without copying them</li>
+            <li>Building a fanbase that streams and shares</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="module-row">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="mod-num">08</div>
+          <div class="mod-title">Pitch to Blogs &amp; Press</div>
+          <span class="mod-chevron">▾</span>
+        </div>
+        <div class="module-body">
+          <p>Media placements build credibility and bring new listeners who'd never find you otherwise. You'll write a press release, find the right blogs for your genre, and build real relationships with music media.</p>
+          <ul class="mod-lessons">
+            <li>Writing a press release that gets opened</li>
+            <li>Finding music blogs and writers in your genre</li>
+            <li>Email outreach templates that work</li>
+            <li>What to do when you get featured</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="module-row">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="mod-num">09</div>
+          <div class="mod-title">Monetise Your Artist</div>
+          <span class="mod-chevron">▾</span>
+        </div>
+        <div class="module-body">
+          <p>This is where the income comes in. You'll set up multiple revenue streams so your artist earns from more than just streams — AdSense, sync licensing, beat sales, and more. All automated once set up.</p>
+          <ul class="mod-lessons">
+            <li>Streaming royalties — how they work and how to maximise them</li>
+            <li>YouTube AdSense setup for your music channel</li>
+            <li>Sync licensing — how to get your music placed in videos and ads</li>
+            <li>Selling beats and stems from your AI tracks</li>
+            <li>Building a passive income stack from one artist</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="module-row">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="mod-num">10</div>
+          <div class="mod-title">Scale and Automate</div>
+          <span class="mod-chevron">▾</span>
+        </div>
+        <div class="module-body">
+          <p>Once your first artist is running, you can scale. This module shows you how to run multiple AI artists simultaneously, batch your content, and build a long-term business that grows without constant input.</p>
+          <ul class="mod-lessons">
+            <li>Running 2–5 AI artists at the same time</li>
+            <li>Batching song creation and content in bulk</li>
+            <li>Automating scheduling and posting</li>
+            <li>Building systems so the business runs without you</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BONUS BOX -->
+    <div class="bonus-box fade-up">
+      <span class="bonus-tag">★ Bonus Included</span>
+      <h3>The NeonArtist Toolkit</h3>
+      <p>On top of every module, you get a full set of done-for-you resources — so you're never starting from a blank page.</p>
+      <div class="bonus-items">
+        <div class="bonus-item">Suno prompt templates</div>
+        <div class="bonus-item">CapCut video templates</div>
+        <div class="bonus-item">Canva cover art presets</div>
+        <div class="bonus-item">Press release template</div>
+        <div class="bonus-item">SubmitHub pitch template</div>
+        <div class="bonus-item">Release-day checklist</div>
+        <div class="bonus-item">AI Prompt Generator tool</div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:44px;" class="fade-up">
+      <a class="btn-primary" href="#pricing">
+        Get Instant Access
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <p style="margin-top:12px;font-size:12px;color:var(--muted);">One-time payment · Instant access · Lifetime updates</p>
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section id="results" style="background:var(--surface);">
+  <div class="section-inner">
+    <p class="eyebrow fade-up">Real AI Artists. Real Results.</p>
+    <h2 class="section-title fade-up fade-up-delay-1">AI music isn't the future.<br><span style="color:var(--green)">It's happening now.</span></h2>
+    <div class="case-grid">
+      <div class="case-card fade-up fade-up-delay-2">
+        <div class="case-tag">Case Study 01 — Blow Records</div>
+        <h3>Zero to 80M+ streams in under a year</h3>
+        <div class="case-stats">
+          <div class="case-stat"><span class="number">66M</span><span class="label">Spotify streams on their #1 track</span></div>
+          <div class="case-stat"><span class="number">1.6M</span><span class="label">TikTok videos created under their sound</span></div>
+        </div>
+        <div class="case-divider"></div>
+        <p class="case-note">Built from scratch. No studio. No face. No prior audience. This is the playbook we teach.</p>
+      </div>
+      <div class="case-card fade-up fade-up-delay-3">
+        <div class="case-tag">Case Study 02 — Xania Monet</div>
+        <h3>AI R&amp;B artist. Billboard Top 10. Multimillion deal.</h3>
+        <div class="case-stats">
+          <div class="case-stat"><span class="number">Top 10</span><span class="label">Billboard R&amp;B Digital Song Sales</span></div>
+          <div class="case-stat"><span class="number">$Multi-M</span><span class="label">Deal signed with Hallwood Media</span></div>
+        </div>
+        <div class="case-divider"></div>
+        <p class="case-note">Built entirely with AI. No real person behind the music. Proof AI artists are being taken seriously at industry level.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT YOU'LL BUILD -->
+<section>
+  <div class="section-inner">
+    <p class="eyebrow fade-up">What You'll Build</p>
+    <h2 class="section-title fade-up fade-up-delay-1">Not just music.<br><span style="color:var(--green)">A real business.</span></h2>
+    <p class="section-sub fade-up fade-up-delay-2">By the end of NeonArtist you won't just have songs — you'll have a brand, an audience, and income that grows while you sleep.</p>
+    <div class="build-grid">
+      <div class="build-card fade-up fade-up-delay-1">
+        <div class="build-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.4"/><path d="M2 17c0-3.866 3.134-7 7-7s7 3.134 7 7" stroke="currentColor" stroke-width="1.4"/></svg></div>
+        <h3>A Faceless AI Artist</h3>
+        <ul><li>A unique identity that stands out</li><li>A brand that connects and lasts</li><li>Freedom to create on your terms</li></ul>
+      </div>
+      <div class="build-card fade-up fade-up-delay-2">
+        <div class="build-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="4" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M7 8l4 2-4 2V8z" fill="currentColor"/></svg></div>
+        <h3>A Content Engine</h3>
+        <ul><li>High-quality songs, clips, and visuals</li><li>Viral-ready content that gets attention</li><li>A system that keeps you consistent</li></ul>
+      </div>
+      <div class="build-card fade-up fade-up-delay-3">
+        <div class="build-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="5" cy="14" r="2" stroke="currentColor" stroke-width="1.4"/><circle cx="13" cy="14" r="2" stroke="currentColor" stroke-width="1.4"/><circle cx="9" cy="5" r="2" stroke="currentColor" stroke-width="1.4"/><path d="M9 7v4M5 12V9l4-2 4 2v3" stroke="currentColor" stroke-width="1.2"/></svg></div>
+        <h3>A Growing Audience</h3>
+        <ul><li>Fans that listen, follow, and share</li><li>Reach that compounds over time</li><li>Presence on every major platform</li></ul>
+      </div>
+      <div class="build-card fade-up fade-up-delay-4">
+        <div class="build-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 13l4-4 3 3 5-7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>A Scalable Income System</h3>
+        <ul><li>Multiple income streams, one system</li><li>Automated workflows that scale</li><li>Real income. Real freedom.</li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="pricing-section">
+  <div class="section-inner" style="text-align:center;">
+    <p class="eyebrow fade-up">Founding Member Price</p>
+    <h2 class="section-title fade-up fade-up-delay-1">Get instant access.<br><span style="color:var(--green)">Start today.</span></h2>
+    <p class="section-sub fade-up fade-up-delay-2" style="margin:0 auto;">Founding member pricing is live now. Price increases once the launch window closes.</p>
+
+    <div class="pricing-card fade-up fade-up-delay-3">
+      <div class="pricing-label">
+        <span class="badge-dot"></span>
+        Now Live — Founding Member Price
+      </div>
+
+      <div class="price-row">
+        <span class="price-main">$199</span>
+        <span class="price-was">$397</span>
+      </div>
+      <p class="price-note">One-time payment · Instant access · No subscription</p>
+
+      <p class="pricing-name">AI Artist Complete</p>
+      <p class="pricing-tagline">Everything you need to build a faceless AI music brand from zero to income. Founding members lock in this price forever — it goes up after launch.</p>
+
+      <div class="features-list">
+        <div class="feature-item"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#39FF14" stroke-width="1.2"/><path d="M4.5 7.5l2 2 4-4" stroke="#39FF14" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>7+ video lessons + PDFs</div>
+        <div class="feature-item"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#39FF14" stroke-width="1.2"/><path d="M4.5 7.5l2 2 4-4" stroke="#39FF14" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>AI Music Prompt Generator</div>
+        <div class="feature-item"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#39FF14" stroke-width="1.2"/><path d="M4.5 7.5l2 2 4-4" stroke="#39FF14" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Lifetime updates</div>
+        <div class="feature-item"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#39FF14" stroke-width="1.2"/><path d="M4.5 7.5l2 2 4-4" stroke="#39FF14" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Prompt + template library</div>
+        <div class="feature-item"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#39FF14" stroke-width="1.2"/><path d="M4.5 7.5l2 2 4-4" stroke="#39FF14" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Cover art &amp; visual presets</div>
+        <div class="feature-item"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#39FF14" stroke-width="1.2"/><path d="M4.5 7.5l2 2 4-4" stroke="#39FF14" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Release-day playbook</div>
+        <div class="feature-item"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#39FF14" stroke-width="1.2"/><path d="M4.5 7.5l2 2 4-4" stroke="#39FF14" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>CapCut &amp; Canva templates</div>
+        <div class="feature-item"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#39FF14" stroke-width="1.2"/><path d="M4.5 7.5l2 2 4-4" stroke="#39FF14" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Future modules, free forever</div>
+      </div>
+
+      <div style="background:rgba(57,255,20,0.05);border:1px solid rgba(57,255,20,0.2);border-radius:10px;padding:14px 18px;margin-bottom:20px;text-align:left;">
+        <p style="font-size:12px;color:var(--green);font-weight:700;margin-bottom:4px;letter-spacing:0.3px;">⚡ AI is moving fast — and so are we.</p>
+        <p style="font-size:12px;color:var(--muted);line-height:1.65;margin:0;">As new tools, platforms, and strategies emerge, new modules will be added to NeonArtist. Every future module is included in your purchase — automatically, at no extra cost.</p>
+      </div>
+
+      <a class="btn-full" href="https://neonbrush4.gumroad.com/l/NeonArtist">
+        Get Instant Access — $199
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <p class="pricing-footer">One-time payment · Instant access · Founding member price</p>
+
+      <div class="guarantee-strip">
+        <div class="guarantee-icon">🔒</div>
+        <div>
+          <h4>Secure checkout</h4>
+          <p>Your payment is processed securely. You get instant access to all materials the moment your payment goes through.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section>
+  <div class="section-inner">
+    <p class="eyebrow fade-up">FAQ</p>
+    <h2 class="section-title fade-up fade-up-delay-1">Common <span style="color:var(--green)">questions.</span></h2>
+
+    <div class="faq-list fade-up">
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          Do I need any music experience?
+          <span class="faq-chevron">▾</span>
+        </div>
+        <div class="faq-a">No. The course is built for complete beginners. You don't need to know music theory, how to use a DAW, or anything about the music industry. Every tool you need is walked through from scratch.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          What tools will I need? Are they expensive?
+          <span class="faq-chevron">▾</span>
+        </div>
+        <div class="faq-a">The main tool is Suno (AI music generation) which starts at around $10/month. DistroKid for distribution is around $23/year. Most other tools used in the course are free. Total starting cost is well under $50/month.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          Do I have to show my face?
+          <span class="faq-chevron">▾</span>
+        </div>
+        <div class="faq-a">Never. The entire system is built around faceless AI artists. The course teaches you exactly how to build a brand, create content, and grow an audience without appearing on camera at any point.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          How long until I start seeing results?
+          <span class="faq-chevron">▾</span>
+        </div>
+        <div class="faq-a">Most students have their first song live on Spotify within the first week. Meaningful streaming numbers and social growth typically start appearing within 30–60 days of consistent posting. Income follows as your audience builds.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          Is this a one-time payment?
+          <span class="faq-chevron">▾</span>
+        </div>
+        <div class="faq-a">Yes — $199 one time. No subscription, no hidden fees. You get lifetime access to everything including all future modules that get added to the course.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          What is the AI Prompt Generator?
+          <span class="faq-chevron">▾</span>
+        </div>
+        <div class="faq-a">It's a web tool built exclusively for NeonArtist students. You enter your genre, mood, and style — and it generates a Suno-ready music prompt and full song lyrics using AI. It saves hours of trial and error when creating music. Access it at neonartist.app/generator with your student link.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="final-cta-card fade-up">
+    <h2>Ready to build your <span style="color:var(--green)">AI Artist?</span></h2>
+    <p class="final-cta-sub">Join at the founding member price today. Lock in $199 before it goes up — and get instant access to everything.</p>
+    <a class="btn-primary" href="#pricing" style="margin:0 auto;">
+      Get Instant Access — $199
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <p class="final-cta-note">One-time payment · Instant access · Lifetime updates</p>
+    <p class="final-cta-note2">Founding member price — increases after launch window</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2025 NeonArtist. All rights reserved.</p>
+  <p>neonartist.app</p>
+</footer>
+
+<script>
+  /* NAV SCROLL */
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => { nav.classList.toggle('scrolled', window.scrollY > 40); }, { passive: true });
+
+  /* WAVEFORM */
+  (function() {
+    const canvas = document.getElementById('waveCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const BAR_COUNT = 48;
+    const GREEN = '#39FF14';
+    const bars = Array.from({ length: BAR_COUNT }, () => ({
+      phase: Math.random() * Math.PI * 2, speed: 0.018 + Math.random() * 0.032,
+      amp: 0.3 + Math.random() * 0.7, base: 0.08 + Math.random() * 0.15,
+    }));
+    function resize() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width * dpr; canvas.height = 72 * dpr;
+      canvas.style.width = rect.width + 'px'; canvas.style.height = '72px';
+      ctx.scale(dpr, dpr);
+    }
+    resize();
+    window.addEventListener('resize', resize, { passive: true });
+    function draw() {
+      const W = parseFloat(canvas.style.width); const H = 72;
+      ctx.clearRect(0, 0, W, H);
+      const barW = 3;
+      const gap = (W - barW * BAR_COUNT) / (BAR_COUNT - 1);
+      const maxH = H * 0.88;
+      bars.forEach((b, i) => {
+        b.phase += b.speed;
+        const wave = (Math.sin(b.phase) * 0.65 + Math.sin(b.phase * 1.7 + 1.2) * 0.35);
+        const height = Math.max(4, (b.base + b.amp * (wave * 0.5 + 0.5)) * maxH);
+        const x = i * (barW + gap); const y = (H - height) / 2;
+        ctx.shadowColor = GREEN; ctx.shadowBlur = 6 + height * 0.06;
+        const grad = ctx.createLinearGradient(x, y, x, y + height);
+        grad.addColorStop(0, 'rgba(57,255,20,0.9)'); grad.addColorStop(0.5, 'rgba(57,255,20,0.55)'); grad.addColorStop(1, 'rgba(57,255,20,0.15)');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.roundRect(x, y, barW, height, 2); ctx.fill();
+      });
+      requestAnimationFrame(draw);
+    }
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) { requestAnimationFrame(draw); observer.disconnect(); }
+    });
+    observer.observe(canvas);
+  })();
+
+  /* SCROLL FADE-UP */
+  const fadeEls = document.querySelectorAll('.fade-up');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  fadeEls.forEach(el => io.observe(el));
+
+  /* MODULE ACCORDION */
+  function toggleModule(header) {
+    const row = header.parentElement;
+    row.classList.toggle('open');
+  }
+
+  /* FAQ ACCORDION */
+  function toggleFaq(q) {
+    const item = q.parentElement;
+    item.classList.toggle('open');
+  }
+</script>
+
+</body>
+</html>
